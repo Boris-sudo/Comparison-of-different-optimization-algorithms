@@ -36,17 +36,31 @@
                 "type": "tabs",
                 "children": [
                   {
-                    "id": "15b5042307df1cba",
+                    "id": "ee83eb0d2927a6ae",
                     "type": "leaf",
                     "state": {
                       "type": "markdown",
                       "state": {
-                        "file": "Модели БД/CategoryInterface.md",
+                        "file": "Модели БД/StreetInterface.md",
                         "mode": "source",
                         "source": false
                       },
                       "icon": "lucide-file",
-                      "title": "CategoryInterface"
+                      "title": "StreetInterface"
+                    }
+                  },
+                  {
+                    "id": "2fe0c3eb20c18991",
+                    "type": "leaf",
+                    "state": {
+                      "type": "markdown",
+                      "state": {
+                        "file": "Модели БД/HouseInterface.md",
+                        "mode": "source",
+                        "source": false
+                      },
+                      "icon": "lucide-file",
+                      "title": "HouseInterface"
                     }
                   }
                 ]
@@ -246,11 +260,12 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "15b5042307df1cba",
+  "active": "ee83eb0d2927a6ae",
   "lastOpenFiles": [
-    "Модели БД/StreetInterface.md",
-    "Модели БД/HouseInterface.md",
+    "Модели БД/CategoryInterface.md",
     "Модели БД/CityInterface.md",
+    "Модели БД/HouseInterface.md",
+    "Модели БД/StreetInterface.md",
     "Стак проекта.md",
     "Документация.md",
     "Главная страница.md",
@@ -258,7 +273,6 @@
     "Алгоритмы.md",
     "Модели.md",
     "Жизненный цикл пользователя.md",
-    "Модели БД/CategoryInterface.md",
     "Описание алгоритмов/Ant Colony Optimization.md",
     "Описание алгоритмов/A star.md",
     "Описание алгоритмов/Genetic Algorithm.md",
