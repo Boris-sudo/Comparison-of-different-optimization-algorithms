@@ -1,0 +1,44 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:\"Модели БД\"  ",
+      "color": {
+        "a": 1,
+        "rgb": 14701138
+      }
+    },
+    {
+      "query": "file:Главная",
+      "color": {
+        "a": 1,
+        "rgb": 1319925
+      }
+    },
+    {
+      "query": "path:\"Описание алгоритмов\"  ",
+      "color": {
+        "a": 1,
+        "rgb": 11657298
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": -3,
+  "nodeSizeMultiplier": 1.325,
+  "lineSizeMultiplier": 1.4015625,
+  "collapse-forces": true,
+  "centerStrength": 0.4765625,
+  "repelStrength": 13.28125,
+  "linkStrength": 1,
+  "linkDistance": 263,
+  "scale": 1.1747551719820442,
+  "close": true
+}

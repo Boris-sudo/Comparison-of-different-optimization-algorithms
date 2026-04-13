@@ -1,0 +1,40 @@
+{
+    "name": "backend",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server.ts",
+    "scripts": {
+        "watch-server": "nodemon --watch src --exec ts-node src/server.ts",
+        "build-swagger-and-routes": "tsoa spec-and-routes",
+        "run-redis": "docker run --name redis-dev -p 6379:6379 -d redis"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "dependencies": {
+        "@koa/cors": "^5.0.0",
+        "@koa/router": "^13.1.0",
+        "bcryptjs": "^3.0.3",
+        "cli-progress": "^3.12.0",
+        "dotenv": "^17.4.1",
+        "ioredis": "^5.4.2",
+        "koa": "^2.15.3",
+        "koa-bodyparser": "^4.4.1",
+        "koa-redis": "^4.0.1",
+        "redis": "^4.7.0",
+        "tsoa": "^6.6.0",
+        "typeorm": "^0.3.20",
+        "uuid": "^11.0.3"
+    },
+    "devDependencies": {
+        "@types/cli-progress": "^3.11.6",
+        "@types/koa": "^2.13.0",
+        "@types/koa__cors": "^5.0.1",
+        "@types/koa__router": "^12.0.5",
+        "@types/koa-bodyparser": "^4.3.13",
+        "@types/node": "^25.6.0",
+        "ts-node": "^10.9.2",
+        "typescript": "^6.0.2"
+    }
+}

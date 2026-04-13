@@ -1,0 +1,14 @@
+{
+  "highlighterStyle": "none",
+  "highlighterMethods": "css-classes",
+  "highlighters": {
+    "red": "#E1192970",
+    "blue": "#198DE170",
+    "green": "#19E11C70"
+  },
+  "highlighterOrder": [
+    "red",
+    "blue",
+    "green"
+  ]
+}
