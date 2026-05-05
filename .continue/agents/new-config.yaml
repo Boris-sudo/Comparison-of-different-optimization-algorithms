@@ -1,0 +1,15 @@
+name: Example Config
+version: 1.0.0
+schema: v1
+
+models:
+  - name: Qwen Coder 7B
+    provider: ollama
+    model: qwen2.5-coder:7b
+    roles: [chat, edit, apply]
+context:
+  - provider: folder
+  - provider: code
+  - provider: diff
+experimental:
+  autoApprove: ["read_file", "edit_file", "create_file", "delete_file"]

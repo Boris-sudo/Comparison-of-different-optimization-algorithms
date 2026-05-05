@@ -1,3 +1,5 @@
+import { CityInterface } from "./city.interface";
+
 export interface UserResponse {
-    map: string;
+    city: CityInterface;
 }

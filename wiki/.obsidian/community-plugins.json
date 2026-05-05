@@ -3,5 +3,7 @@
   "obsidian-excalidraw-plugin",
   "highlightr-plugin",
   "table-editor-obsidian",
-  "custom-node-size"
+  "custom-node-size",
+  "obsidian-kanban",
+  "obsidian-tasks-plugin"
 ]

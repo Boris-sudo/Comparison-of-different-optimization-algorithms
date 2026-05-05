@@ -1,9 +1,11 @@
 import { UserResponse } from "../interfaces/user.interface";
 
-export const createNewUser = async function (): Promise<UserResponse> {
-    let user: UserResponse = {
-        map: '',
-    }
+import * as CityService from './city.service'
 
-    return user;
+export const createNewUser = async function (): Promise<UserResponse> {
+    const randomCity = await CityService.createRandomCity();
+
+    return {
+        city: randomCity
+    };
 }

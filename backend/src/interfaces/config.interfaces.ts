@@ -8,4 +8,5 @@ export interface Config {
     nodeEnv: string
     port: number
     redis: RedisConnDetails
+    OpenAiApiKey: string
 }

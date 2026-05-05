@@ -14,7 +14,7 @@ export async function koaAuthentication(request: koa.Request, securityName: stri
         const session = await redis.get(token);
 
         if (session) {
-            ctx.header.auth = '';
+            // ctx.header.auth = '';
             ctx.myContext = JSON.parse(session) as ServerSideSessionContext;
             return;
         }
