@@ -30,11 +30,14 @@
     },
     "devDependencies": {
         "@types/cli-progress": "^3.11.6",
+        "@types/jest": "^30.0.0",
         "@types/koa": "^2.13.0",
         "@types/koa__cors": "^5.0.1",
         "@types/koa__router": "^12.0.5",
         "@types/koa-bodyparser": "^4.3.13",
         "@types/node": "^25.6.0",
+        "jest": "^30.3.0",
+        "ts-jest": "^29.4.9",
         "ts-node": "^10.9.2",
         "typescript": "^6.0.2"
     }

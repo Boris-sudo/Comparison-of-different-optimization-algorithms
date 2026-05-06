@@ -85,7 +85,7 @@ export class AnnealingService {
         /** calculating distance to the next point if it exists **/
         let next_distance = Infinity;
         for (let next_index = categoryIndex + 1; next_index < this.items.length; next_index++) {
-            if (this.keys[next_distance].type !== 'fixed' || this.items[next_index].length === 0) continue;
+            if (this.keys[next_index].type !== 'fixed' || this.items[next_index].length === 0) continue;
             next_distance = getDistance(this.city, this.items[next_index][0].location.id, item.id);
             break;
         }
@@ -214,7 +214,7 @@ export class AnnealingService {
             max_distance = Math.max(max_distance, distances[i - 1]);
         }
         average_distance /= (items.length - 1);
-        const distance_indicator = average_distance * Math.max(1, max_distance - min_distance);
+        const distance_indicator = Math.max(average_distance, 1) * Math.max(1, max_distance - min_distance);
         if (distance_indicator === 0)
             throw (new InternalServerError("distance indicator is 0"));
 
@@ -245,9 +245,10 @@ export class AnnealingService {
 
         for (let i = 1; i <= Math.min(result.length, this.CHANGES_COUNT); i++) {
             // generating random index of item in result to change
+            let count = 0;
             let index = getRandomInt(0, result.length - 1);
-            while (this.items[index].length === 1)
-                index = getRandomInt(0, result.length - 1);
+            while (this.items[index].length === 1 && count < 10)
+                index = getRandomInt(0, result.length - 1), count ++;
 
             // changing result[index] on other random value
             const item_index = getRandomInt(0, this.items[index].length - 1);

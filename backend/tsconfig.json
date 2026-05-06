@@ -5,6 +5,7 @@
             "es2021",
             "dom"
         ],
+        "types": ["jest"],
         "module": "commonjs",
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
