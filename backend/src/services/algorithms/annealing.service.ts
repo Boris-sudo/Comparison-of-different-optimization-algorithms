@@ -32,7 +32,11 @@ export class AnnealingService {
     /**  */
     private readonly CHANGES_COUNT = 1;
 
-    constructor(city: CityInterface, keys: PromptElement[], startPosition: HouseInterface) {
+    constructor(
+        city: CityInterface,
+        keys: PromptElement[],
+        startPosition: HouseInterface
+    ) {
         this.city = city;
         this.keys = keys;
         this.startPosition = startPosition;
@@ -58,7 +62,7 @@ export class AnnealingService {
     }
 
     /** функция считает насколько `item` подходит под нашу выборку */
-    public async calculatePreSimilarity(
+    private async calculatePreSimilarity(
         item: HouseInterface,
         categoryIndex: number,
     ): Promise<number[]> {
@@ -93,7 +97,7 @@ export class AnnealingService {
         /** adding distances to the answer **/
         let distance = prev_distance;
         if (next_distance !== Infinity)
-            distance += next_distance;
+            distance = (prev_distance + next_distance) / 2;
         similarity = similarity * (1e5 / (Math.max(1, distance)));
 
         return [similarity, categoriesSum];
@@ -108,10 +112,6 @@ export class AnnealingService {
         for (const key of this.keys)
             this.items.push([]);
 
-        // setting arrays getting distances matrix with places
-        let locations: HouseInterface[] = [this.startPosition];
-        let lastIndex = 1;
-
         // setting items for fixed points
         for (let index = 0; index < this.keys.length; index++) {
             if (this.keys[index].type == 'fixed') {
@@ -122,7 +122,6 @@ export class AnnealingService {
                 this.items[index].push({
                     location: house
                 });
-                locations.push(house);
             }
         }
 
