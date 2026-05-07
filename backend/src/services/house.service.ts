@@ -1,9 +1,9 @@
 import { HouseChangeInterface, HouseInterface } from "../interfaces/house.interface";
-import { CityInterface } from "../interfaces/city.interface";
+import { MappedCityInterface } from "../interfaces/city.interface";
 import { InternalServerError } from "../utils/errors";
 
 export const changeHouse = async function (
-    city: CityInterface,
+    city: MappedCityInterface,
     house: HouseChangeInterface
 ) {
     switch (house.action) {

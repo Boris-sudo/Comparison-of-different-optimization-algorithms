@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { config } from "../config";
 
 import { LocationItem, PathPostInterface, PathResponseInterface, PromptElement } from "../interfaces/path.interface";
-import { CityInterface } from "../interfaces/city.interface";
+import { MappedCityInterface } from "../interfaces/city.interface";
 
 import * as CategoryService from './category.service';
 import { AnnealingService } from "./algorithms/annealing.service";
@@ -99,7 +99,7 @@ const parsePrompt = async function (
     return parsed;
 }
 export const createPath = async function (
-    city: CityInterface,
+    city: MappedCityInterface,
     path: PathPostInterface
 ): Promise<PathResponseInterface> {
     // todo check pre work on prompt

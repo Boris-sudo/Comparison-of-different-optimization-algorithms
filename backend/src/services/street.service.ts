@@ -1,4 +1,4 @@
-import { CityInterface } from "../interfaces/city.interface";
+import { MappedCityInterface } from "../interfaces/city.interface";
 import { StreetChangeInterface, StreetInterface } from "../interfaces/street.interface";
 import { HouseInterface } from "../interfaces/house.interface";
 import { InternalServerError } from "../utils/errors";
@@ -11,7 +11,7 @@ const parseStreetId = (id: string): { from: string; to: string } => {
 };
 
 export const changeStreet = async function (
-    city: CityInterface,
+    city: MappedCityInterface,
     street: StreetChangeInterface
 ): Promise<void> {
     switch (street.action) {

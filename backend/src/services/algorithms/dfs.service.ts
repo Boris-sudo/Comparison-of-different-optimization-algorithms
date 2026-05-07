@@ -1,4 +1,4 @@
-import { CityInterface } from "../../interfaces/city.interface";
+import { MappedCityInterface } from "../../interfaces/city.interface";
 import { LocationItem, PromptElement } from "../../interfaces/path.interface";
 import { HouseInterface } from "../../interfaces/house.interface";
 import { getDistance } from "../city.service";
@@ -6,19 +6,19 @@ import { InternalServerError } from "../../utils/errors";
 import { StreetInterface } from "../../interfaces/street.interface";
 
 export class DfsService {
-    private city: CityInterface;
+    private city: MappedCityInterface;
     private keys: PromptElement[];
     private startPosition: HouseInterface;
 
     private items: LocationItem[][];
-    private graph: CityInterface;
+    private graph: MappedCityInterface;
     private result: LocationItem[];
     private durations: Map<string, number>;
 
     private readonly MAX_ITEMS_COUNT = 29;
 
     constructor(
-        city: CityInterface,
+        city: MappedCityInterface,
         keys: PromptElement[],
         startPosition: HouseInterface
     ) {

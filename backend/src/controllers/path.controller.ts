@@ -4,6 +4,7 @@ import { OperationId, Post, Response, Route, Security, Tags, Request, Body } fro
 
 import { PathPostInterface, PathResponseInterface } from "../interfaces/path.interface";
 
+import * as CityService from '../services/city.service';
 import * as PathService from '../services/path.service';
 
 @Route('path')
@@ -17,8 +18,8 @@ export class PathController extends Controller {
         @Request() request: koa.Request,
         @Body() dto: PathPostInterface
     ): Promise<PathResponseInterface> {
-        const user = request.ctx.myContext.user;
-        const city = user.city;
+        const user = request.ctx.myContext;
+        const city = await CityService.mapCity(user.city);
 
         const path = await PathService.createPath(city, dto);
 

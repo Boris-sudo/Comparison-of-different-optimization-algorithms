@@ -1,12 +1,12 @@
 import { getDistance } from '../services/city.service';
-import { CityInterface } from '../interfaces/city.interface';
+import { MappedCityInterface } from '../interfaces/city.interface';
 import { HouseInterface } from '../interfaces/house.interface';
 import { StreetInterface } from '../interfaces/street.interface';
 
 const buildCity = (
     houses: { id: string }[],
     streets: { from: string; to: string; length: number }[]
-): CityInterface => {
+): MappedCityInterface => {
     const houseIndex = new Map<string, HouseInterface>();
     const streetIndex = new Map<string, StreetInterface>();
 

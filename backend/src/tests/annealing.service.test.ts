@@ -1,10 +1,10 @@
 import { AnnealingService } from '../services/algorithms/annealing.service';
-import { CityInterface } from '../interfaces/city.interface';
+import { MappedCityInterface } from '../interfaces/city.interface';
 import { HouseInterface } from '../interfaces/house.interface';
 import { StreetInterface } from '../interfaces/street.interface';
 import { PromptElement } from '../interfaces/path.interface';
 
-const buildCity = (size: number): CityInterface => {
+const buildCity = (size: number): MappedCityInterface => {
     const houses: HouseInterface[] = [];
     const houseIndex = new Map<string, HouseInterface>();
     const streetIndex = new Map<string, StreetInterface>();

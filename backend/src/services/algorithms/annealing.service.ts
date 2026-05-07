@@ -1,6 +1,6 @@
 import { LocationItem, PromptElement } from "../../interfaces/path.interface";
 
-import { CityInterface } from "../../interfaces/city.interface";
+import { MappedCityInterface } from "../../interfaces/city.interface";
 import { HouseInterface } from "../../interfaces/house.interface";
 import { InternalServerError } from "../../utils/errors";
 import { getDistance } from "../city.service";
@@ -10,7 +10,7 @@ export class AnnealingService {
     /* parsed elements of the prompt */
     keys: PromptElement[];
     /* city */
-    city: CityInterface;
+    city: MappedCityInterface;
 
     items: Array<Array<LocationItem>>;
 
@@ -33,7 +33,7 @@ export class AnnealingService {
     private readonly CHANGES_COUNT = 1;
 
     constructor(
-        city: CityInterface,
+        city: MappedCityInterface,
         keys: PromptElement[],
         startPosition: HouseInterface
     ) {

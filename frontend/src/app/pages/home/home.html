@@ -27,18 +27,58 @@
         @if (activeTab === 'editor') {
             <div class="editor-layout">
                 <div class="graph-container card">
-                    <div #cytoscapeContainer class="cytoscape-canvas"></div>
-                    <div class="graph-info">
-                        <span class="badge badge--success">{{ houses.length }} зданий</span>
-                        <span class="badge badge--warning">{{ streets.length }} дорог</span>
-                    </div>
-                </div>
+    <!-- Тулбар -->
+    <div class="graph-toolbar">
+        <button
+                class="tool-btn"
+                [class.tool-btn--active]="editMode === 'select'"
+                (click)="setEditMode('select')"
+                title="Выбор"
+        >
+            ↖ Выбор
+        </button>
+        <button
+                class="tool-btn"
+                [class.tool-btn--active]="editMode === 'add-node'"
+                (click)="setEditMode('add-node')"
+                title="Добавить вершину"
+        >
+            ＋ Вершина
+        </button>
+        <button
+                class="tool-btn"
+                [class.tool-btn--active]="editMode === 'add-edge'"
+                (click)="setEditMode('add-edge')"
+                title="Добавить ребро"
+        >
+            ／ Ребро
+        </button>
+
+        @if (editMode === 'add-edge' && edgeSourceNode) {
+            <span class="tool-hint">
+                ✓ {{ houseCategories[edgeSourceNode.category]?.icon }}
+                выбрана — кликните на вторую вершину
+            </span>
+        } @else if (editMode === 'add-edge') {
+            <span class="tool-hint">Кликните на первую вершину</span>
+        } @else if (editMode === 'add-node') {
+            <span class="tool-hint">Кликните по пустому месту</span>
+        }
+    </div>
+
+    <svg #graphSvg class="graph-svg"></svg>
+
+    <div class="graph-info">
+        <span class="badge badge--success">{{ houses.length }} зданий</span>
+        <span class="badge badge--warning">{{ streets.length }} дорог</span>
+    </div>
+</div>
 
                 @if (selectedHouse) {
                     <div class="panel card">
                         <h3>Редактирование здания</h3>
                         <p class="text-muted">
-                            Текущая: {{ houseCategories[selectedHouse.category]?.icon }}
+                            {{ houseCategories[selectedHouse.category]?.icon }}
                             {{ houseCategories[selectedHouse.category]?.name }}
                         </p>
                         <div class="panel-section">
@@ -75,7 +115,6 @@
             <div class="route-layout">
                 <div class="card route-card">
                     <h3>Построение маршрута</h3>
-
                     <div class="form-group">
                         <label>Описание маршрута</label>
                         <textarea
@@ -85,7 +124,6 @@
                                 rows="3"
                         ></textarea>
                     </div>
-
                     <div class="form-group">
                         <label>Алгоритм</label>
                         <div class="algorithm-grid">
@@ -101,7 +139,6 @@
                             }
                         </div>
                     </div>
-
                     <button
                             class="btn btn--primary btn--full"
                             (click)="buildRoute()"
@@ -114,11 +151,9 @@
                             Построить маршрут
                         }
                     </button>
-
                     @if (error) {
                         <div class="error-message">{{ error }}</div>
                     }
-
                     @if (routeResult.length > 0) {
                         <div class="route-result">
                             <h4>Маршрут ({{ routeResult.length }} точек)</h4>

@@ -1,9 +1,9 @@
 import * as koa from 'koa';
 import { Controller } from "@tsoa/runtime";
-import { OperationId, Post, Response, Route, Security, Tags, Request, Body } from "tsoa";
+import { Body, OperationId, Post, Request, Response, Route, Security, Tags } from "tsoa";
 import { redis } from "../server";
 
-import { CityModelInterface } from "../interfaces/city.interface";
+import { CityInterface, CityModelInterface } from "../interfaces/city.interface";
 import { StreetChangeInterface } from "../interfaces/street.interface";
 import { HouseChangeInterface } from "../interfaces/house.interface";
 import { UserResponse } from "../interfaces/user.interface";
@@ -26,14 +26,17 @@ export class GraphController extends Controller {
     ): Promise<UserResponse> {
         const token = getToken(request);
         const myContext = request.ctx.myContext;
-        const user: UserResponse = myContext.user;
-        const new_city = await CityService.createRandomCity();
+        const user: UserResponse = myContext;
+        const new_city_model = await CityService.createRandomCity();
 
-        user.city = new_city;
+        user.city = {
+            id: new_city_model.id,
+            houses: new_city_model.houses,
+        };
 
         await redis.set(token, JSON.stringify(user));
 
-        return myContext.user;
+        return myContext;
     }
 
     @Post("createRandomGraphByModel")
@@ -47,9 +50,13 @@ export class GraphController extends Controller {
     ): Promise<UserResponse> {
         const token = getToken(request);
         const myContext = request.ctx.myContext;
-        const user = myContext.user;
-        const city = await CityService.createRandomCity(dto.count);
-        user.city = city;
+        const user = myContext;
+        const new_city_model = await CityService.createRandomCity(dto.count);
+
+        user.city = {
+            id: new_city_model.id,
+            houses: new_city_model.houses,
+        };
 
         await redis.set(token, JSON.stringify(user));
 
@@ -66,8 +73,9 @@ export class GraphController extends Controller {
         @Body() dto: StreetChangeInterface,
     ): Promise<UserResponse> {
         const token = getToken(request);
-        const user = request.ctx.myContext.user;
-        await StreetService.changeStreet(user.city, dto);
+        const user = request.ctx.myContext;
+        const city = await CityService.mapCity(user.city);
+        await StreetService.changeStreet(city, dto);
 
         await redis.set(token, JSON.stringify(user));
 
@@ -84,8 +92,9 @@ export class GraphController extends Controller {
         @Body() dto: HouseChangeInterface,
     ): Promise<UserResponse> {
         const token = getToken(request);
-        const user = request.ctx.myContext.user;
-        await HouseService.changeHouse(user.city, dto);
+        const user = request.ctx.myContext;
+        const city = await CityService.mapCity(user.city);
+        await HouseService.changeHouse(city, dto);
 
         await redis.set(token, JSON.stringify(user));
 

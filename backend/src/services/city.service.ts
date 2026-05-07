@@ -1,4 +1,4 @@
-import { CityInterface } from "../interfaces/city.interface";
+import { CityInterface, MappedCityInterface } from "../interfaces/city.interface";
 import { v4 as uuidv4 } from 'uuid';
 import { getRandomInt } from "../utils/utils";
 
@@ -6,13 +6,34 @@ import * as CategoryService from './category.service';
 import * as StreetService from './street.service';
 import { InternalServerError } from '../utils/errors';
 import { HouseInterface } from "../interfaces/house.interface";
+import { StreetInterface } from "../interfaces/street.interface";
+
+export const mapCity = async function (
+    city: CityInterface,
+): Promise<MappedCityInterface> {
+    let res: MappedCityInterface = {
+        id: city.id,
+        houses: city.houses,
+        houseIndex: new Map<string, HouseInterface>(),
+        streetIndex: new Map<string, StreetInterface>(),
+    }
+
+    for (const house of res.houses) {
+        res.houseIndex.set(house.id, house);
+        for (const edge of house.edges) {
+            res.streetIndex.set(edge.id, edge);
+        }
+    }
+
+    return res;
+}
 
 /**
  * @param {Record<number, number>} categories - count of houses by category
  **/
 export const createRandomCity = async function (
     categories?: Record<number, number>
-): Promise<CityInterface> {
+): Promise<MappedCityInterface> {
     const categories_count = CategoryService.categoriesCount();
 
     if (categories === undefined) {
@@ -36,8 +57,8 @@ export const createRandomCity = async function (
  **/
 const generateCityByCategories = async function (
     categories: Record<number, number>
-): Promise<CityInterface> {
-    let city: CityInterface = {
+): Promise<MappedCityInterface> {
+    let city: MappedCityInterface = {
         id: uuidv4(),
         houses: [],
         houseIndex: new Map(),
@@ -77,7 +98,7 @@ const generateCityByCategories = async function (
 }
 
 export const getDistance = function (
-    city: CityInterface,
+    city: MappedCityInterface,
     fromId: string,
     toId: string
 ): number {
