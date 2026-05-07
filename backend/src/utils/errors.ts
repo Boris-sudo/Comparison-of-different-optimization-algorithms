@@ -30,15 +30,18 @@ export class UserAlreadyExists extends Conflict {
     }
 }
 
-export class NotFound extends Conflict {
+export class NotFound extends Error {
+    status = 404
     name = 'NotFound'
+    expose = false
 
     constructor(obj: string) {
         super(`${ obj } not found`);
     }
 }
 
-export class UserNotFound extends Conflict {
+export class UserNotFound extends Error {
+    status = 404
     name = 'UserNotFound'
 
     constructor() {
@@ -46,8 +49,9 @@ export class UserNotFound extends Conflict {
     }
 }
 
-export class InvalidUserPassword extends Conflict {
-    name = 'UserNotFound'
+export class InvalidUserPassword extends Error {
+    status = 401
+    name = 'InvalidUserPassword'
 
     constructor(mes: string) {
         super(`Invalid User Password: ${ mes }`);

@@ -2,11 +2,10 @@ import * as koa from 'koa';
 import { Controller } from "@tsoa/runtime";
 import { Get, OperationId, Post, Response, Route, Security, Tags, Request } from "tsoa";
 
-import { UserResponse } from "../interfaces/user.interface";
+import { RegistrationResponse, UserResponse } from "../interfaces/user.interface";
 import { createNewUser } from "../services/user.service";
 import { redis } from "../server";
 
-import * as UserService from "../services/user.service";
 import * as crypto from "../utils/crypto";
 
 
@@ -14,13 +13,13 @@ import * as crypto from "../utils/crypto";
 export class UserController extends Controller {
     @Post("register")
     @Tags("Default")
-    @Response<string>(200, "succeed")
+    @Response<RegistrationResponse>(200, "succeed")
     @OperationId("register")
-    public async register(): Promise<string> {
+    public async register(): Promise<RegistrationResponse> {
         const user = await createNewUser();
         const token = crypto.generateBearerToken();
         await redis.set(token, JSON.stringify(user));
-        return 'Bearer: ' + token;
+        return { token: 'Bearer: ' + token };
     }
 
     @Get("profile")
@@ -32,6 +31,6 @@ export class UserController extends Controller {
         @Request() request: koa.Request
     ): Promise<UserResponse> {
         const myContext = request.ctx.myContext;
-        return myContext.user;
+        return myContext;
     }
 }

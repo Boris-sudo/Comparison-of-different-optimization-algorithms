@@ -1,6 +1,7 @@
 .gitignore
 .openapi-generator-ignore
 README.md
+api.base.service.ts
 api.module.ts
 api/api.ts
 api/default.service.ts
@@ -8,7 +9,18 @@ configuration.ts
 encoder.ts
 git_push.sh
 index.ts
+model/actionInterface.ts
+model/cityInterface.ts
+model/cityModelInterface.ts
+model/houseChangeInterface.ts
+model/houseInterface.ts
+model/modelType.ts
 model/models.ts
+model/pathPostInterface.ts
+model/pathResponseInterface.ts
+model/registrationResponse.ts
+model/streetChangeInterface.ts
+model/streetInterface.ts
 model/userResponse.ts
 param.ts
 variables.ts

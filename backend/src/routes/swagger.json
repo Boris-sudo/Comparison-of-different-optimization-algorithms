@@ -7,14 +7,238 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
+			"PathResponseInterface": {
+				"properties": {
+					"points": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"points"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ModelType": {
+				"type": "string",
+				"enum": [
+					"Dfs",
+					"Bfs",
+					"Annealing",
+					"ACO",
+					"A*"
+				]
+			},
+			"StreetInterface": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"from": {
+						"type": "string"
+					},
+					"to": {
+						"type": "string"
+					},
+					"length": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"id",
+					"from",
+					"to",
+					"length"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"HouseInterface": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"edges": {
+						"items": {
+							"$ref": "#/components/schemas/StreetInterface"
+						},
+						"type": "array"
+					},
+					"category": {
+						"type": "number",
+						"format": "double"
+					},
+					"time": {
+						"type": "number",
+						"format": "double"
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"weather": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"id",
+					"edges",
+					"category",
+					"time",
+					"price",
+					"weather"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PathPostInterface": {
+				"properties": {
+					"model": {
+						"$ref": "#/components/schemas/ModelType"
+					},
+					"prompt": {
+						"type": "string"
+					},
+					"startPoint": {
+						"$ref": "#/components/schemas/HouseInterface"
+					}
+				},
+				"required": [
+					"model",
+					"prompt",
+					"startPoint"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CityInterface": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"houses": {
+						"items": {
+							"$ref": "#/components/schemas/HouseInterface"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"houses"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"UserResponse": {
 				"properties": {
-					"map": {
+					"city": {
+						"$ref": "#/components/schemas/CityInterface"
+					}
+				},
+				"required": [
+					"city"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Record_number.number_": {
+				"properties": {},
+				"additionalProperties": {
+					"type": "number",
+					"format": "double"
+				},
+				"type": "object",
+				"description": "Construct a type with a set of properties K of type T"
+			},
+			"CityModelInterface": {
+				"properties": {
+					"count": {
+						"$ref": "#/components/schemas/Record_number.number_"
+					}
+				},
+				"required": [
+					"count"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ActionInterface": {
+				"type": "string",
+				"enum": [
+					"change",
+					"delete",
+					"add"
+				]
+			},
+			"StreetChangeInterface": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"length": {
+						"type": "number",
+						"format": "double"
+					},
+					"action": {
+						"$ref": "#/components/schemas/ActionInterface"
+					}
+				},
+				"required": [
+					"id",
+					"length",
+					"action"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"HouseChangeInterface": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"category": {
+						"type": "number",
+						"format": "double"
+					},
+					"time": {
+						"type": "number",
+						"format": "double"
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"weather": {
+						"type": "boolean"
+					},
+					"action": {
+						"$ref": "#/components/schemas/ActionInterface"
+					}
+				},
+				"required": [
+					"id",
+					"category",
+					"time",
+					"price",
+					"weather",
+					"action"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RegistrationResponse": {
+				"properties": {
+					"token": {
 						"type": "string"
 					}
 				},
 				"required": [
-					"map"
+					"token"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -59,6 +283,176 @@
 				"parameters": []
 			}
 		},
+		"/path/createPath": {
+			"post": {
+				"operationId": "createPath",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PathResponseInterface"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Default"
+				],
+				"security": [
+					{
+						"auth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PathPostInterface"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/city/generateRandomCity": {
+			"post": {
+				"operationId": "generateRandomCity",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Default"
+				],
+				"security": [
+					{
+						"auth": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/city/createRandomGraphByModel": {
+			"post": {
+				"operationId": "generateRandomCityByModel",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Default"
+				],
+				"security": [
+					{
+						"auth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CityModelInterface"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/city/changeStreet": {
+			"post": {
+				"operationId": "changeStreet",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Default"
+				],
+				"security": [
+					{
+						"auth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/StreetChangeInterface"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/city/changeHouse": {
+			"post": {
+				"operationId": "changeHouse",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Default"
+				],
+				"security": [
+					{
+						"auth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/HouseChangeInterface"
+							}
+						}
+					}
+				}
+			}
+		},
 		"/auth/register": {
 			"post": {
 				"operationId": "register",
@@ -68,7 +462,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"type": "string"
+									"$ref": "#/components/schemas/RegistrationResponse"
 								}
 							}
 						}
@@ -110,7 +504,8 @@
 	},
 	"servers": [
 		{
-			"url": "/"
+            "url": "http://localhost:3000",
+            "description": "Локальный сервер"
 		}
 	]
 }

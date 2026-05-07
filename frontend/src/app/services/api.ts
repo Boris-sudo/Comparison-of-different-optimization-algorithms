@@ -7,12 +7,13 @@ import { environment } from "../../environments/environment";
     providedIn: 'root'
 })
 export class ApiService {
+    public api: DefaultService;
 
-    public apiService!: DefaultService;
-
-    constructor(
-        private httpClient: HttpClient,
-    ) {
-        this.apiService = new DefaultService(httpClient, environment.apiBaseUrl, new Configuration());
+    constructor(private httpClient: HttpClient) {
+        this.api = new DefaultService(
+            httpClient,
+            environment.apiBaseUrl,
+            new Configuration(),
+        );
     }
 }

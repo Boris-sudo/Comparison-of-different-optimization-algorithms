@@ -7,10 +7,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { CityInterface } from './cityInterface';
 
 
-export interface UserResponse { 
-    city: CityInterface;
-}
+export const ModelType = {
+    DFS: 'Dfs',
+    BFS: 'Bfs',
+    ANNEALING: 'Annealing',
+    ACO: 'ACO',
+    A: 'A*'
+} as const;
+export type ModelType = typeof ModelType[keyof typeof ModelType];
 

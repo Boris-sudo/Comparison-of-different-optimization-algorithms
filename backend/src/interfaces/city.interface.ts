@@ -4,7 +4,9 @@ import { StreetInterface } from "./street.interface";
 export interface CityInterface {
     id: string;
     houses: Array<HouseInterface>;
+    /** @ignore */
     houseIndex: Map<string, HouseInterface>;
+    /** @ignore */
     streetIndex: Map<string, StreetInterface>
 }
 

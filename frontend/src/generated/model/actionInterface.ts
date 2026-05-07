@@ -7,10 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { CityInterface } from './cityInterface';
 
 
-export interface UserResponse { 
-    city: CityInterface;
-}
+export const ActionInterface = {
+    CHANGE: 'change',
+    DELETE: 'delete',
+    ADD: 'add'
+} as const;
+export type ActionInterface = typeof ActionInterface[keyof typeof ActionInterface];
 

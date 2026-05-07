@@ -101,8 +101,9 @@ export const createRandomEdges = function (
     streetIndex: Map<string, StreetInterface>,
     depth?: number
 ) {
+
     for (const house of houses) {
-        const count = getRandomInt(2, 4);
+        const count = randomChoice([0,0,0,1,1,2,3]);
         const usedHouseIds = new Set<string>([house.id]);
 
         for (let _ = 0; _ < count; _++) {

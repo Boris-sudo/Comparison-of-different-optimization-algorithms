@@ -2,14 +2,16 @@
     "$schema": "node_modules/@openapitools/openapi-generator-cli/config.schema.json",
     "spaces": 2,
     "generator-cli": {
-        "version": "6.6.0",
+        "version": "7.13.0",
         "generators": {
             "v3.0": {
                 "generatorName": "typescript-angular",
                 "inputSpec": "../backend/src/routes/swagger.json",
                 "output": "./src/generated",
                 "additionalProperties": {
-                    "enumPropertyNaming": "UPPERCASE"
+                    "enumPropertyNaming": "UPPERCASE",
+                    "ngVersion": "21.0.0",
+                    "providedIn": "root"
                 }
             }
         }

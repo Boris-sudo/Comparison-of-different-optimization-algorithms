@@ -7,10 +7,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { CityInterface } from './cityInterface';
+import { HouseInterface } from './houseInterface';
 
 
-export interface UserResponse { 
-    city: CityInterface;
+export interface CityInterface { 
+    id: string;
+    houses: Array<HouseInterface>;
 }
 

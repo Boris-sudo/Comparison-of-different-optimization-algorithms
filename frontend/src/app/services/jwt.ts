@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { DefaultService } from "../../generated";
 import { ApiService } from "./api";
 
 @Injectable({ providedIn: "root" })
@@ -6,9 +7,8 @@ export class JwtService {
     private readonly key: string = 'jwtToken';
 
     constructor(
-        private api: ApiService,
-    ) {
-    }
+        private apiService: ApiService
+    ) {}
 
     getToken(): string | null {
         return localStorage.getItem(this.key);
@@ -20,7 +20,7 @@ export class JwtService {
             this.destroyCredentials();
             return;
         }
-        this.api.apiService.configuration.credentials = { HTTPBearer: token };
+        this.apiService.api.configuration.credentials = { auth: token };
     }
 
     saveToken(token: string): void {
@@ -29,13 +29,13 @@ export class JwtService {
     }
 
     checkTokenSetUp(): boolean {
-        const credentials = this.api.apiService.configuration.credentials;
-        const credentials_str = JSON.stringify(credentials);
-        return credentials_str !== '{}';
+        const credentials = this.apiService.api.configuration.credentials;
+        const credentialsStr = JSON.stringify(credentials);
+        return credentialsStr !== '{}';
     }
 
     destroyCredentials() {
-        this.api.apiService.configuration.credentials = {};
+        this.apiService.api.configuration.credentials = {};
     }
 
     destroyToken(): void {

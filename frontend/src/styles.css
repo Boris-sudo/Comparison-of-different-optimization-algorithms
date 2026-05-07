@@ -6,10 +6,10 @@
 @import 'stylesheets/elements/map-elements.css';
 
 .container {
-    all:             unset;
-    box-sizing:      border-box;
-    margin:          0;
-    padding:         0;
-    color:           inherit;
+    all: unset;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    color: inherit;
     text-decoration: none;
 }

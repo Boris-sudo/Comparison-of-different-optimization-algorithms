@@ -7,10 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { CityInterface } from './cityInterface';
 
 
-export interface UserResponse { 
-    city: CityInterface;
+export interface StreetInterface { 
+    id: string;
+    from: string;
+    to: string;
+    length: number;
 }
 

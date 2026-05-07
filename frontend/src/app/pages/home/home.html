@@ -1,1 +1,144 @@
-<p>home works!</p>
+<div class="main-content">
+    @if (isLoading) {
+        <div class="loading-overlay flex-center">
+            <div class="spinner"></div>
+            <p class="text-secondary">Загрузка...</p>
+        </div>
+    } @else if (profileApi.notAuthenticated()) {
+        <div class="welcome-screen flex-center">
+            <div class="card welcome-card">
+                <h1 class="welcome-title">RouteOptimizer</h1>
+                <p class="text-secondary">Сравнение алгоритмов оптимизации маршрутов</p>
+                <button class="btn btn--primary btn--large" (click)="profileApi.register()">
+                    Начать работу
+                </button>
+            </div>
+        </div>
+    } @else {
+        <div class="tabs">
+            <button class="tab" [class.tab--active]="activeTab === 'editor'" (click)="onTabChange('editor')">
+                Редактор графа
+            </button>
+            <button class="tab" [class.tab--active]="activeTab === 'route'" (click)="onTabChange('route')">
+                Построение маршрута
+            </button>
+        </div>
+
+        @if (activeTab === 'editor') {
+            <div class="editor-layout">
+                <div class="graph-container card">
+                    <div #cytoscapeContainer class="cytoscape-canvas"></div>
+                    <div class="graph-info">
+                        <span class="badge badge--success">{{ houses.length }} зданий</span>
+                        <span class="badge badge--warning">{{ streets.length }} дорог</span>
+                    </div>
+                </div>
+
+                @if (selectedHouse) {
+                    <div class="panel card">
+                        <h3>Редактирование здания</h3>
+                        <p class="text-muted">
+                            Текущая: {{ houseCategories[selectedHouse.category]?.icon }}
+                            {{ houseCategories[selectedHouse.category]?.name }}
+                        </p>
+                        <div class="panel-section">
+                            <label>Выберите категорию</label>
+                            <div class="category-grid">
+                                @for (cat of houseCategories; track cat.id) {
+                                    <button
+                                            class="category-btn"
+                                            [class.category-btn--active]="selectedHouse.category === cat.id"
+                                            (click)="changeHouseCategory(cat.id)"
+                                    >
+                                        <span class="category-icon">{{ cat.icon }}</span>
+                                        <span class="category-name">{{ cat.name }}</span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                        <div class="panel-actions">
+                            <button class="btn btn--danger" (click)="deleteHouse()">
+                                Удалить здание
+                            </button>
+                            <button class="btn btn--secondary" (click)="selectedHouse = null; updateNodeStyles()">
+                                Отмена
+                            </button>
+                        </div>
+                    </div>
+                } @else {
+                    <div class="panel card panel--empty">
+                        <p class="text-muted">Нажмите на здание для редактирования</p>
+                    </div>
+                }
+            </div>
+        } @else {
+            <div class="route-layout">
+                <div class="card route-card">
+                    <h3>Построение маршрута</h3>
+
+                    <div class="form-group">
+                        <label>Описание маршрута</label>
+                        <textarea
+                                class="input input--textarea"
+                                [(ngModel)]="routePrompt"
+                                placeholder="Например: Ужин в ресторане, затем культурная программа"
+                                rows="3"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Алгоритм</label>
+                        <div class="algorithm-grid">
+                            @for (algo of availableAlgorithms; track algo.id) {
+                                <button
+                                        class="algo-btn"
+                                        [class.algo-btn--active]="selectedAlgorithm === algo.id"
+                                        (click)="selectedAlgorithm = algo.id"
+                                >
+                                    <span class="algo-name">{{ algo.name }}</span>
+                                    <span class="algo-desc">{{ algo.description }}</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <button
+                            class="btn btn--primary btn--full"
+                            (click)="buildRoute()"
+                            [disabled]="isBuildingRoute || !routePrompt.trim()"
+                    >
+                        @if (isBuildingRoute) {
+                            <span class="spinner spinner--small"></span>
+                            Построение...
+                        } @else {
+                            Построить маршрут
+                        }
+                    </button>
+
+                    @if (error) {
+                        <div class="error-message">{{ error }}</div>
+                    }
+
+                    @if (routeResult.length > 0) {
+                        <div class="route-result">
+                            <h4>Маршрут ({{ routeResult.length }} точек)</h4>
+                            <div class="route-path">
+                                @for (pointId of routeResult; track pointId; let last = $last) {
+                                    <span class="route-point">
+                                        {{ houseCategories[getCategoryForHouse(pointId)]?.icon || '📍' }}
+                                        {{ getCategoryForHouse(pointId) >= 0
+                                        ? houseCategories[getCategoryForHouse(pointId)].name
+                                        : pointId.slice(0, 8) }}
+                                    </span>
+                                    @if (!last) {
+                                        <span class="route-arrow">→</span>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

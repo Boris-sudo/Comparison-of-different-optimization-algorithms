@@ -6,6 +6,10 @@ import { fetchMiddlewares, KoaTemplateService } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { PingController } from './../controllers/ping.controller';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { PathController } from './../controllers/path.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { GraphController } from './../controllers/graph.controller';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UserController } from './../controllers/user.controller';
 import { koaAuthentication } from './../sessions/main';
 // @ts-ignore - no great way to install types from subpackage
@@ -17,10 +21,115 @@ const koaAuthenticationRecasted = koaAuthentication as (req: KRequest, securityN
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "PathResponseInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "points": {"dataType":"array","array":{"dataType":"string"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ModelType": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["Dfs"]},{"dataType":"enum","enums":["Bfs"]},{"dataType":"enum","enums":["Annealing"]},{"dataType":"enum","enums":["ACO"]},{"dataType":"enum","enums":["A*"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "StreetInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "from": {"dataType":"string","required":true},
+            "to": {"dataType":"string","required":true},
+            "length": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "HouseInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "edges": {"dataType":"array","array":{"dataType":"refObject","ref":"StreetInterface"},"required":true},
+            "category": {"dataType":"double","required":true},
+            "time": {"dataType":"double","required":true},
+            "price": {"dataType":"double","required":true},
+            "weather": {"dataType":"boolean","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PathPostInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "model": {"ref":"ModelType","required":true},
+            "prompt": {"dataType":"string","required":true},
+            "startPoint": {"ref":"HouseInterface","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CityInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "houses": {"dataType":"array","array":{"dataType":"refObject","ref":"HouseInterface"},"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "UserResponse": {
         "dataType": "refObject",
         "properties": {
-            "map": {"dataType":"string","required":true},
+            "city": {"ref":"CityInterface","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Record_number.number_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"double"},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CityModelInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "count": {"ref":"Record_number.number_","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ActionInterface": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["change"]},{"dataType":"enum","enums":["delete"]},{"dataType":"enum","enums":["add"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "StreetChangeInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "length": {"dataType":"double","required":true},
+            "action": {"ref":"ActionInterface","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "HouseChangeInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "category": {"dataType":"double","required":true},
+            "time": {"dataType":"double","required":true},
+            "price": {"dataType":"double","required":true},
+            "weather": {"dataType":"boolean","required":true},
+            "action": {"ref":"ActionInterface","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "RegistrationResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "token": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -61,6 +170,165 @@ export function RegisterRoutes(router: KoaRouter) {
 
             return templateService.apiHandler({
               methodName: 'ping',
+              controller,
+              context,
+              validatedArgs,
+              successStatus: undefined,
+            });
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsPathController_createPath: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                dto: {"in":"body","name":"dto","required":true,"ref":"PathPostInterface"},
+        };
+        router.post('/path/createPath',
+            authenticateMiddleware([{"auth":[]}]),
+            ...(fetchMiddlewares<Middleware>(PathController)),
+            ...(fetchMiddlewares<Middleware>(PathController.prototype.createPath)),
+
+            async function PathController_createPath(context: Context, next: Next) {
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = templateService.getValidatedArgs({ args: argsPathController_createPath, context, next });
+            } catch (err) {
+              const error = err as any;
+              error.message ||= JSON.stringify({ fields: error.fields });
+              context.status = error.status;
+              context.throw(context.status, error.message, error);
+            }
+
+            const controller = new PathController();
+
+            return templateService.apiHandler({
+              methodName: 'createPath',
+              controller,
+              context,
+              validatedArgs,
+              successStatus: undefined,
+            });
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsGraphController_generateRandomCity: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+        };
+        router.post('/city/generateRandomCity',
+            authenticateMiddleware([{"auth":[]}]),
+            ...(fetchMiddlewares<Middleware>(GraphController)),
+            ...(fetchMiddlewares<Middleware>(GraphController.prototype.generateRandomCity)),
+
+            async function GraphController_generateRandomCity(context: Context, next: Next) {
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = templateService.getValidatedArgs({ args: argsGraphController_generateRandomCity, context, next });
+            } catch (err) {
+              const error = err as any;
+              error.message ||= JSON.stringify({ fields: error.fields });
+              context.status = error.status;
+              context.throw(context.status, error.message, error);
+            }
+
+            const controller = new GraphController();
+
+            return templateService.apiHandler({
+              methodName: 'generateRandomCity',
+              controller,
+              context,
+              validatedArgs,
+              successStatus: undefined,
+            });
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsGraphController_createRandomGraphByModel: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                dto: {"in":"body","name":"dto","required":true,"ref":"CityModelInterface"},
+        };
+        router.post('/city/createRandomGraphByModel',
+            authenticateMiddleware([{"auth":[]}]),
+            ...(fetchMiddlewares<Middleware>(GraphController)),
+            ...(fetchMiddlewares<Middleware>(GraphController.prototype.createRandomGraphByModel)),
+
+            async function GraphController_createRandomGraphByModel(context: Context, next: Next) {
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = templateService.getValidatedArgs({ args: argsGraphController_createRandomGraphByModel, context, next });
+            } catch (err) {
+              const error = err as any;
+              error.message ||= JSON.stringify({ fields: error.fields });
+              context.status = error.status;
+              context.throw(context.status, error.message, error);
+            }
+
+            const controller = new GraphController();
+
+            return templateService.apiHandler({
+              methodName: 'createRandomGraphByModel',
+              controller,
+              context,
+              validatedArgs,
+              successStatus: undefined,
+            });
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsGraphController_changeStreet: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                dto: {"in":"body","name":"dto","required":true,"ref":"StreetChangeInterface"},
+        };
+        router.post('/city/changeStreet',
+            authenticateMiddleware([{"auth":[]}]),
+            ...(fetchMiddlewares<Middleware>(GraphController)),
+            ...(fetchMiddlewares<Middleware>(GraphController.prototype.changeStreet)),
+
+            async function GraphController_changeStreet(context: Context, next: Next) {
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = templateService.getValidatedArgs({ args: argsGraphController_changeStreet, context, next });
+            } catch (err) {
+              const error = err as any;
+              error.message ||= JSON.stringify({ fields: error.fields });
+              context.status = error.status;
+              context.throw(context.status, error.message, error);
+            }
+
+            const controller = new GraphController();
+
+            return templateService.apiHandler({
+              methodName: 'changeStreet',
+              controller,
+              context,
+              validatedArgs,
+              successStatus: undefined,
+            });
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsGraphController_changeHouse: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                dto: {"in":"body","name":"dto","required":true,"ref":"HouseChangeInterface"},
+        };
+        router.post('/city/changeHouse',
+            authenticateMiddleware([{"auth":[]}]),
+            ...(fetchMiddlewares<Middleware>(GraphController)),
+            ...(fetchMiddlewares<Middleware>(GraphController.prototype.changeHouse)),
+
+            async function GraphController_changeHouse(context: Context, next: Next) {
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = templateService.getValidatedArgs({ args: argsGraphController_changeHouse, context, next });
+            } catch (err) {
+              const error = err as any;
+              error.message ||= JSON.stringify({ fields: error.fields });
+              context.status = error.status;
+              context.throw(context.status, error.message, error);
+            }
+
+            const controller = new GraphController();
+
+            return templateService.apiHandler({
+              methodName: 'changeHouse',
               controller,
               context,
               validatedArgs,

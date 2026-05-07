@@ -110,6 +110,25 @@ export const createPath = async function (
         case "Annealing": {
             const model = new AnnealingService(city, points, path.startPoint);
             pathResponse = await model.generate();
+            break;
+        }
+        case "Dfs": {
+            const { DfsService } = await import("./algorithms/dfs.service");
+            const model = new DfsService(city, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        case "Bfs": {
+            throw new Error("BFS algorithm not implemented yet");
+        }
+        case "A*": {
+            throw new Error("A* algorithm not implemented yet");
+        }
+        case "ACO": {
+            throw new Error("ACO algorithm not implemented yet");
+        }
+        default: {
+            throw new Error(`Unknown algorithm: ${path.model}`);
         }
     }
 

@@ -16,7 +16,7 @@ const server = async function () {
 
     app.use(cors({
         credentials: true,
-        allowMethods: ["GET", "POST", "PUT", "OPTIONS"],
+        allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         origin: (ctx: Koa.Context) => {
             return ctx.request.headers.origin ?? "";
         },

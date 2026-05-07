@@ -7,10 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { CityInterface } from './cityInterface';
 
 
-export interface UserResponse { 
-    city: CityInterface;
+export interface CityModelInterface { 
+    /**
+     * Construct a type with a set of properties K of type T
+     */
+    count: { [key: string]: number; };
 }
 

@@ -16,7 +16,7 @@ export const createRandomCity = async function (
     const categories_count = CategoryService.categoriesCount();
 
     if (categories === undefined) {
-        const count = getRandomInt(Math.min(4, categories_count), categories_count);
+        const count = getRandomInt(2, 6);
 
         categories = {};
         for (let _ = 0; _ < count; _++) {
@@ -24,7 +24,7 @@ export const createRandomCity = async function (
             while (categories[category] !== undefined)
                 category = getRandomInt(0, categories_count);
 
-            categories[category] = getRandomInt(3, 10);
+            categories[category] = getRandomInt(1, 3);
         }
     }
 
@@ -46,15 +46,16 @@ const generateCityByCategories = async function (
 
     // TODO city generator
     for (const category of Object.keys(categories)) {
-        if (typeof category != "number") {
+        const catNum = parseInt(category);
+        if (isNaN(catNum)) {
             throw new InternalServerError('wrong categories array type');
         }
 
-        for (let i = 0; i < categories[category]; i++) {
+        for (let i = 0; i < categories[catNum]; i++) {
             let house_id = uuidv4();
             let house: HouseInterface = {
                 id: house_id,
-                category: parseInt(category),
+                category: catNum,
                 edges: [],
                 time: 0,
                 price: 0,
