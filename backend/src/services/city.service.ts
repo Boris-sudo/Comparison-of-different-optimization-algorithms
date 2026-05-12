@@ -66,7 +66,6 @@ const generateCityByCategories = async function (
         streetIndex: new Map(),
     }
 
-    // TODO city generator
     for (const category of Object.keys(categories)) {
         const catNum = parseInt(category);
         if (isNaN(catNum)) {

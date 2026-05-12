@@ -126,8 +126,8 @@ export class AnnealingService {
         // setting items for the `category` type
         for (let index = 0; index < this.keys.length; index++) {
             if (this.keys[index].type === 'category') {
-                console.log(`\x1b[36m[Annealing]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m start: `, (Date.now() - start), "ms"); // TODO remove after testing
-                start = Date.now(); // TODO remove after testing
+                console.log(`\x1b[36m[Annealing]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m start: `, (Date.now() - start), "ms");
+                start = Date.now();
 
                 // calculating places pre-similarities
                 let sort_places: { house: HouseInterface, similarity: number, categoriesSum: number }[] = []; // array with places and their similarities
@@ -140,11 +140,10 @@ export class AnnealingService {
                     });
                 }
 
-                console.log(`\x1b[36m[Annealing]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m calculated pre similarities: `, (Date.now() - start), "ms"); // TODO remove after testing
-                start = Date.now(); // TODO remove after testing
+                console.log(`\x1b[36m[Annealing]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m calculated pre similarities: `, (Date.now() - start), "ms");
+                start = Date.now();
 
                 // sorting places by their pre-similarity
-                // todo check this for normal distribution
                 sort_places.sort((a, b) => b.similarity - a.similarity);
                 sort_places = sort_places.slice(0, this.MAX_ITEMS_COUNT);
                 while (sort_places[sort_places.length - 1].categoriesSum === 0)
@@ -155,7 +154,7 @@ export class AnnealingService {
 
                 // getting top places
                 for (const place of sort_places)
-                    this.items[index].push({ // todo check this shit
+                    this.items[index].push({
                         location: place.house,
                         categoriesSum: place.categoriesSum,
                     });
@@ -163,8 +162,8 @@ export class AnnealingService {
                 if (this.items[index].length === 0)
                     throw new InternalServerError("sorted places are invalid");
 
-                console.log(`\x1b[36m[Annealing]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m finished: `, (Date.now() - start), "ms"); // TODO remove after testing
-                start = Date.now(); // TODO remove after testing
+                console.log(`\x1b[36m[Annealing]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m finished: `, (Date.now() - start), "ms");
+                start = Date.now();
             }
         }
     }
