@@ -165,6 +165,12 @@ export class GraphEditService {
         const link = this.state.d3Links.find(l => l.id === id);
         if (link) link.length = newLength;
 
+        const revId = street.id.split(':').reverse().join(':');
+        const revS = this.state.streets.find(s => s.id === revId);
+        if (revS) revS.length = newLength;
+        const revLink = this.state.d3Links.find(l => l.id === revId);
+        if (revLink) revLink.length = newLength;
+
         this.render.syncLinks();
 
         try {
@@ -184,7 +190,12 @@ export class GraphEditService {
 
         this.state.streets = this.state.streets.filter(s => s.id !== id);
         this.state.streetSet.delete(id);
-        this.state.d3Links = this.state.d3Links.filter(l => l.id !== id);
+        console.log(id);
+        console.log(this.state.d3Links[0].id);
+        this.state.d3Links = this.state.d3Links.filter(l => {
+            return l.id !== id && l.id.split(':').reverse().join(':') != id;
+        });
+        console.log(this.state.d3Links);
         this.state.selectedStreet.set(null);
 
         this.render.syncLinks();

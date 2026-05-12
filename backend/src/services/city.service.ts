@@ -1,12 +1,13 @@
-import { CityInterface, MappedCityInterface } from "../interfaces/city.interface";
 import { v4 as uuidv4 } from 'uuid';
 import { getRandomInt } from "../utils/utils";
 
-import * as CategoryService from './category.service';
-import * as StreetService from './street.service';
+import { CityInterface, MappedCityInterface } from "../interfaces/city.interface";
 import { InternalServerError } from '../utils/errors';
 import { HouseInterface } from "../interfaces/house.interface";
 import { StreetInterface } from "../interfaces/street.interface";
+
+import * as CategoryService from './category.service';
+import * as StreetService from './street.service';
 
 /** Adds `Map` for edges and vertical of the graph **/
 export const mapCity = async function (
@@ -88,8 +89,8 @@ const generateCityByCategories = async function (
         }
     }
 
-    for (const house of city.houses) {
-        city.houseIndex.set(house.id, house);
+    for (let i = 0; i < city.houses.length; i++) {
+        city.houseIndex.set(city.houses[i].id, city.houses[i]);
     }
 
     StreetService.createRandomEdges(city.houses, city.streetIndex);

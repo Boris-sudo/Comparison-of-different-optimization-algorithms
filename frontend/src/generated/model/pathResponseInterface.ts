@@ -8,10 +8,12 @@
  * Do not edit the class manually.
  */
 import { PathResultItem } from './pathResultItem';
+import { PathAnalyzeDuration } from './pathAnalyzeDuration';
 
 
 export interface PathResponseInterface { 
     points: Array<PathResultItem>;
     length: number;
+    duration: PathAnalyzeDuration;
 }
 

@@ -120,9 +120,14 @@ export const createRandomEdges = function (
     const randomQueue = new RandomQueue<HouseInterface>();
     const queue = new Queue<HouseInterface>();
 
+    let edges_choice = [];
+    if (houses.length < 50) edges_choice = [2,2,3,3,4,4,5];
+    else if (houses.length < 200) edges_choice = [2,2,3];
+    else edges_choice = [2,2,2,3];
+
     for (const house of houses) {
         randomQueue.add(house);
-        edgesCount.set(house.id, getRandomInt(2, 5));
+        edgesCount.set(house.id, randomChoice(edges_choice));
     }
 
     const start = randomQueue.get()!;

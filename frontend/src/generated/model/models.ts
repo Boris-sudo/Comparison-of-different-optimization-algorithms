@@ -4,6 +4,7 @@ export * from './cityModelInterface';
 export * from './houseChangeInterface';
 export * from './houseInterface';
 export * from './modelType';
+export * from './pathAnalyzeDuration';
 export * from './pathPostInterface';
 export * from './pathResponseInterface';
 export * from './pathResultItem';

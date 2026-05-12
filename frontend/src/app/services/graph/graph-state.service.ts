@@ -1,5 +1,12 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { HouseInterface, StreetInterface, PathResultItem, ModelType } from '../../../generated';
+import {
+    HouseInterface,
+    StreetInterface,
+    PathResultItem,
+    ModelType,
+    PathAnalyzeDuration,
+    PathResponseInterface
+} from '../../../generated';
 import * as d3 from 'd3';
 
 export interface D3Node extends d3.SimulationNodeDatum {
@@ -51,39 +58,40 @@ export class GraphStateService {
     routeLength = signal<number>(0);
     routePrompt = signal('');
     selectedAlgorithm = signal<ModelType>('Annealing' as ModelType);
+    routeDuration = signal<PathAnalyzeDuration>({ network: 0, algo: 0 });
 
     // ─── Computed ─────────────────────────────────────────────────────────────
     hasRoute = computed(() => this.routeResult().length > 0);
 
     readonly houseCategories = [
-        { id: 0,  name: 'Дом',         icon: '🏠' },
-        { id: 1,  name: 'Парк',         icon: '🌳' },
-        { id: 2,  name: 'Кафе',         icon: '☕' },
-        { id: 3,  name: 'Пекарня',      icon: '🥐' },
-        { id: 4,  name: 'Ресторан',     icon: '🍽️' },
-        { id: 5,  name: 'Музей',        icon: '🏛️' },
-        { id: 6,  name: 'Галерея',      icon: '🎨' },
-        { id: 7,  name: 'Библиотека',   icon: '📚' },
-        { id: 8,  name: 'Книжный',      icon: '📖' },
-        { id: 9,  name: 'Супермаркет',  icon: '🛒' },
-        { id: 10, name: 'Рынок',        icon: '🏪' },
-        { id: 11, name: 'Аптека',       icon: '💊' },
-        { id: 12, name: 'Кинотеатр',    icon: '🎬' },
-        { id: 13, name: 'Театр',        icon: '🎭' },
-        { id: 14, name: 'Спортзал',     icon: '💪' },
-        { id: 15, name: 'Бассейн',      icon: '🏊' },
-        { id: 16, name: 'Школа',        icon: '🏫' },
-        { id: 17, name: 'Университет',  icon: '🎓' },
-        { id: 18, name: 'Церковь',      icon: '⛪' },
-        { id: 19, name: 'Больница',     icon: '🏥' },
+        { id: 0, name: 'Дом', icon: '🏠' },
+        { id: 1, name: 'Парк', icon: '🌳' },
+        { id: 2, name: 'Кафе', icon: '☕' },
+        { id: 3, name: 'Пекарня', icon: '🥐' },
+        { id: 4, name: 'Ресторан', icon: '🍽️' },
+        { id: 5, name: 'Музей', icon: '🏛️' },
+        { id: 6, name: 'Галерея', icon: '🎨' },
+        { id: 7, name: 'Библиотека', icon: '📚' },
+        { id: 8, name: 'Книжный', icon: '📖' },
+        { id: 9, name: 'Супермаркет', icon: '🛒' },
+        { id: 10, name: 'Рынок', icon: '🏪' },
+        { id: 11, name: 'Аптека', icon: '💊' },
+        { id: 12, name: 'Кинотеатр', icon: '🎬' },
+        { id: 13, name: 'Театр', icon: '🎭' },
+        { id: 14, name: 'Спортзал', icon: '💪' },
+        { id: 15, name: 'Бассейн', icon: '🏊' },
+        { id: 16, name: 'Школа', icon: '🏫' },
+        { id: 17, name: 'Университет', icon: '🎓' },
+        { id: 18, name: 'Церковь', icon: '⛪' },
+        { id: 19, name: 'Больница', icon: '🏥' },
     ];
 
     readonly availableAlgorithms = [
         { id: 'Annealing' as ModelType, name: 'Simulated Annealing', description: 'Метрополис-отжиг' },
-        { id: 'Dfs'       as ModelType, name: 'DFS',                 description: 'Поиск в глубину' },
-        { id: 'Bfs'       as ModelType, name: 'BFS',                 description: 'Поиск в ширину' },
-        { id: 'AStar'     as ModelType, name: 'A*',                  description: 'Эвристический' },
-        { id: 'Aco'       as ModelType, name: 'ACO',                 description: 'Муравьиный алг.' },
+        { id: 'Dfs' as ModelType, name: 'DFS', description: 'Поиск в глубину' },
+        { id: 'Bfs' as ModelType, name: 'BFS', description: 'Поиск в ширину' },
+        { id: 'AStar' as ModelType, name: 'A*', description: 'Эвристический' },
+        { id: 'Aco' as ModelType, name: 'ACO', description: 'Муравьиный алг.' },
     ];
 
     // ─── Methods ──────────────────────────────────────────────────────────────
@@ -125,12 +133,13 @@ export class GraphStateService {
             }));
     }
 
-    setRoute(points: PathResultItem[], length: number) {
-        this.routeResult.set(points);
+    setRoute(route: PathResponseInterface) {
+        this.routeResult.set(route.points ?? []);
         this.routeLength.set(length);
+        this.routeDuration.set(route.duration);
         const main: string[] = [];
         const outer: string[] = [];
-        for (const p of points) {
+        for (const p of route.points ?? []) {
             if (p.role === 'main') main.push(p.id);
             else outer.push(p.id);
         }
@@ -140,6 +149,7 @@ export class GraphStateService {
 
     clearRoute() {
         this.routeResult.set([]);
+        this.routeDuration.set({ network: 0, algo: 0 });
         this.routeMainPoints.set([]);
         this.routeOuterPoints.set([]);
         this.routeLength.set(0);

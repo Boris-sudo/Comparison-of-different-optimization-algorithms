@@ -27,6 +27,24 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"PathAnalyzeDuration": {
+				"properties": {
+					"algo": {
+						"type": "number",
+						"format": "double"
+					},
+					"network": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"algo",
+					"network"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"PathResponseInterface": {
 				"properties": {
 					"points": {
@@ -38,11 +56,15 @@
 					"length": {
 						"type": "number",
 						"format": "double"
+					},
+					"duration": {
+						"$ref": "#/components/schemas/PathAnalyzeDuration"
 					}
 				},
 				"required": [
 					"points",
-					"length"
+					"length",
+					"duration"
 				],
 				"type": "object",
 				"additionalProperties": false

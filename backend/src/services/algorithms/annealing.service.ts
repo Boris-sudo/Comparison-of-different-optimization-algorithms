@@ -60,7 +60,7 @@ export class AnnealingService {
     }
 
     /** функция считает насколько `item` подходит под нашу выборку */
-    private async calculatePreSimilarity(
+    async calculatePreSimilarity(
         item: HouseInterface,
         categoryIndex: number,
     ): Promise<number[]> {

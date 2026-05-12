@@ -30,11 +30,21 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PathAnalyzeDuration": {
+        "dataType": "refObject",
+        "properties": {
+            "algo": {"dataType":"double","required":true},
+            "network": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "PathResponseInterface": {
         "dataType": "refObject",
         "properties": {
             "points": {"dataType":"array","array":{"dataType":"refObject","ref":"PathResultItem"},"required":true},
             "length": {"dataType":"double","required":true},
+            "duration": {"ref":"PathAnalyzeDuration","required":true},
         },
         "additionalProperties": false,
     },

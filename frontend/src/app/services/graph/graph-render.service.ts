@@ -79,11 +79,18 @@ export class GraphRenderService {
         this.simulation = d3.forceSimulation<D3Node, D3Link>(this.state.d3Nodes)
             .force('link', d3.forceLink<D3Node, D3Link>(this.state.d3Links)
                 .id(d => d.id)
-                .distance(this.state.houses.length < 100 ? 130 : 500)
+                .distance(
+                    this.state.houses.length < 100 ? 130 :
+                        this.state.houses.length < 500 ? 500 : 3000
+                )
                 .strength(0.3))
             .force('charge', d3.forceManyBody()
                 .strength(d => connectedIds.has((d as D3Node).id) ? -400 : -80)
-                .distanceMax(this.state.houses.length < 100 ? 400 : 700))
+                .distanceMax(
+                    this.state.houses.length < 100 ? 400 :
+                        this.state.houses.length < 500 ? 700 : 1000
+                )
+            )
             .force('center', d3.forceCenter(this.width / 2, this.height / 2).strength(0.05))
             .force('isolatedX', d3.forceX(this.width / 2)
                 .strength(d => connectedIds.has((d as D3Node).id) ? 0 : 0.08))

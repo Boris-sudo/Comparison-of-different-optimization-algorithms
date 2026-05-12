@@ -134,6 +134,13 @@ const parsePrompt = async function (
 ): Promise<PromptElement[]> {
     let prompted: any;
     let parsed: PromptElement[] = [];
+
+    // todo remove after testing
+    return [
+        { type: 'category', raw_prompt: 'парк', categories: { 'парк': 95 } },
+        { type: 'category', raw_prompt: 'кафе', categories: { 'кафе': 95 } }
+    ];
+
     while (parsed.length === 0) {
         try {
             try {
@@ -206,9 +213,10 @@ export const createPath = async function (
 
     let points_ids: string[] = [];
     for (const locationItem of pathResponse)
-        points_ids.push(locationItem.location.id);
+        if (locationItem != undefined)
+            points_ids.push(locationItem.location.id);
 
-    duration_result.network = Date.now() - start_time - duration_result.network;
+    duration_result.algo = Date.now() - start_time - duration_result.network;
 
     const result = buildRouteInOrder(city, points_ids);
 

@@ -16,6 +16,7 @@ model/houseChangeInterface.ts
 model/houseInterface.ts
 model/modelType.ts
 model/models.ts
+model/pathAnalyzeDuration.ts
 model/pathPostInterface.ts
 model/pathResponseInterface.ts
 model/pathResultItem.ts

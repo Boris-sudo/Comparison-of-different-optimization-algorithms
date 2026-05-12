@@ -166,7 +166,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
                 prompt: this.state.routePrompt(),
                 startPoint: this.state.houses.filter(house => house.category === 0)[0].id,
             });
-            this.state.setRoute(result.points ?? [], result.length ?? 0);
+            this.state.setRoute(result);
             this.state.activeTab.set('editor');
             this.cdr.detectChanges();
             setTimeout(() => {

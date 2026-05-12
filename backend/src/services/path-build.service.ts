@@ -114,3 +114,45 @@ export function buildRouteInOrder(
 
     return fullPath;
 }
+
+export function getAllDistancesMatrix(
+    city: MappedCityInterface,
+): Map<string, Map<string, number>> {
+    const result = new Map<string, Map<string, number>>();
+
+    for (const house of city.houses) {
+        const map = new Map<string, number>();
+        for (const house1 of city.houses) {
+            map.set(house1.id, Infinity);
+            if (house1.id === house.id)
+                map.set(house1.id, 0);
+        }
+        result.set(house.id, map);
+    }
+
+    for (const house of city.houses) {
+        for (const edge of house.edges) {
+            result.get(edge.from)?.set(edge.to, edge.length);
+        }
+    }
+
+    const n = city.houses.length;
+    for (let k = 0; k < n; k++)
+        for (let i = 0; i < n; i++)
+            for (let j = 0; j < n; j++) {
+                if (k === i || k === j || i == j) continue;
+                const a = city.houses[k].id;
+                const b = city.houses[i].id;
+                const c = city.houses[j].id;
+
+                const d_ba = result.get(b)?.get(a) ?? Infinity;
+                const d_ac = result.get(a)?.get(c) ?? Infinity;
+
+                if (d_ba === Infinity || d_ac === Infinity) continue;
+
+                const d_bc = result.get(b)?.get(c) ?? Infinity;
+                result.get(b)?.set(c, Math.min(d_bc, d_ba + d_ac));
+            }
+
+    return result;
+}

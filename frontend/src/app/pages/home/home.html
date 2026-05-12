@@ -46,13 +46,21 @@
                         <span class="stat-label">вершин</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-value">{{ state.streets.length }}</span>
+                        <span class="stat-value">{{ state.streets.length / 2 }}</span>
                         <span class="stat-label">рёбер</span>
                     </div>
                     @if (state.hasRoute()) {
                         <div class="stat-item stat-item--accent">
                             <span class="stat-value">{{ state.routeLength() }}</span>
                             <span class="stat-label">длина</span>
+                        </div>
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-value">{{ state.routeDuration().network }}ms</span>
+                            <span class="stat-label">работа нейронки</span>
+                        </div>
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-value">{{ state.routeDuration().algo }}ms</span>
+                            <span class="stat-label">работа алгоритма</span>
                         </div>
                     }
                 </div>

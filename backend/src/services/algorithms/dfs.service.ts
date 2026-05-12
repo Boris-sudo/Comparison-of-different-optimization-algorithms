@@ -4,7 +4,7 @@ import { HouseInterface } from "../../interfaces/house.interface";
 import { InternalServerError } from "../../utils/errors";
 import { StreetInterface } from "../../interfaces/street.interface";
 import { getCategory } from "../category.service";
-import { dijkstra } from "../path-build.service";
+import { getAllDistancesMatrix } from "../path-build.service";
 
 export class DfsService {
     private city: MappedCityInterface;
@@ -15,6 +15,8 @@ export class DfsService {
     private graph: MappedCityInterface;
     private result: LocationItem[];
     private durations: Map<string, number>;
+
+    private distances: Map<string, Map<string, number>>;
 
     private readonly MAX_ITEMS_COUNT = 29;
 
@@ -35,6 +37,7 @@ export class DfsService {
         }
         this.result = [];
         this.durations = new Map<string, number>();
+        this.distances = new Map<string, Map<string, number>>();
     }
 
     /**
@@ -49,6 +52,10 @@ export class DfsService {
     async generate(): Promise<LocationItem[]> {
         let start = Date.now();
         console.log("\x1b[36m[DFS]\x1b[0m generation has been started: ", (Date.now() - start), "ms");
+        start = Date.now();
+
+        this.distances = getAllDistancesMatrix(this.city);
+        console.log("\x1b[36m[DFS]\x1b[0m distances matrix was calculated: ", (Date.now() - start), "ms");
         start = Date.now();
 
         this.findPoints();
@@ -82,32 +89,13 @@ export class DfsService {
             if (getCategory(item.category).name === key)
                 similarity += promptElement.categories![key];
 
-        /** calculating distance to previous point **/
-        let prev_distance = Infinity;
-        for (const house of this.items[categoryIndex])
-            prev_distance = Math.min(prev_distance, dijkstra(this.city, house.location.id, item.id).distance);
-
-        /** calculating distance to the next point if it exists **/
-        let next_distance = Infinity;
-        for (let next_index = categoryIndex + 1; next_index < this.keys.length; next_index++) {
-            if (this.keys[next_index].type !== 'fixed' || this.items[next_index + 1].length === 0) continue;
-            next_distance = dijkstra(this.city, this.items[next_index + 1][0].location.id, item.id).distance;
-            break;
-        }
-
-        /** adding distances to the answer **/
-        let distance = prev_distance;
-        if (next_distance !== Infinity)
-            distance = (prev_distance + next_distance) / 2;
-        similarity = similarity * (1e5 / (Math.max(1, distance)));
-
         return similarity;
     }
 
     /** Finds points for new each key **/
     private findPoints() {
         // setting default value of `items` array
-        this.items = [[{ location: { ...this.startPosition, edges: [...this.startPosition.edges] } }]];
+        this.items = [[{ location: { ...this.startPosition, edges: [] } }]];
         for (let index = 0; index < this.keys.length; index++)
             this.items.push([]);
 
@@ -117,7 +105,7 @@ export class DfsService {
                 const house = this.city.houseIndex.get(this.keys[index].id!);
                 if (house === undefined) throw new InternalServerError(`house ${ index } not found`);
                 this.items[index + 1].push({
-                    location: { ...house, edges: [...house.edges] }
+                    location: { ...house, edges: [] }
                 });
             }
         }
@@ -141,7 +129,7 @@ export class DfsService {
                 // getting top places
                 for (const place of sort_places)
                     this.items[index + 1].push({
-                        location: { ...place.house, edges: [...place.house.edges] },
+                        location: { ...place.house, edges: [] },
                     });
             }
         }
@@ -157,7 +145,7 @@ export class DfsService {
                             id: `${ from.location.id }:${ to.location.id }`,
                             from: from.location.id,
                             to: to.location.id,
-                            length: dijkstra(this.city, from.location.id, to.location.id).distance
+                            length: this.distances.get(from.location.id)?.get(to.location.id) ?? Infinity
                         };
                         from.location.edges.push(street);
                         this.graph.streetIndex.set(street.id, street);
