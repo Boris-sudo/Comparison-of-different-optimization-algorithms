@@ -7,17 +7,42 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
+			"PathResultItem": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"role": {
+						"type": "string",
+						"enum": [
+							"main",
+							"outer"
+						]
+					}
+				},
+				"required": [
+					"id",
+					"role"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"PathResponseInterface": {
 				"properties": {
 					"points": {
 						"items": {
-							"type": "string"
+							"$ref": "#/components/schemas/PathResultItem"
 						},
 						"type": "array"
+					},
+					"length": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
-					"points"
+					"points",
+					"length"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -31,6 +56,26 @@
 					"ACO",
 					"A*"
 				]
+			},
+			"PathPostInterface": {
+				"properties": {
+					"model": {
+						"$ref": "#/components/schemas/ModelType"
+					},
+					"prompt": {
+						"type": "string"
+					},
+					"startPoint": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"model",
+					"prompt",
+					"startPoint"
+				],
+				"type": "object",
+				"additionalProperties": false
 			},
 			"StreetInterface": {
 				"properties": {
@@ -95,26 +140,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"PathPostInterface": {
-				"properties": {
-					"model": {
-						"$ref": "#/components/schemas/ModelType"
-					},
-					"prompt": {
-						"type": "string"
-					},
-					"startPoint": {
-						"$ref": "#/components/schemas/HouseInterface"
-					}
-				},
-				"required": [
-					"model",
-					"prompt",
-					"startPoint"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"CityInterface": {
 				"properties": {
 					"id": {
@@ -146,19 +171,11 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Record_number.number_": {
-				"properties": {},
-				"additionalProperties": {
-					"type": "number",
-					"format": "double"
-				},
-				"type": "object",
-				"description": "Construct a type with a set of properties K of type T"
-			},
 			"CityModelInterface": {
 				"properties": {
 					"count": {
-						"$ref": "#/components/schemas/Record_number.number_"
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
@@ -504,8 +521,7 @@
 	},
 	"servers": [
 		{
-            "url": "http://localhost:3000",
-            "description": "Локальный сервер"
+			"url": "/"
 		}
 	]
 }

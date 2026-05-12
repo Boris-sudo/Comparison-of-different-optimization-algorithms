@@ -1,0 +1,110 @@
+import { MappedCityInterface } from "../interfaces/city.interface";
+import { PathResponseInterface } from "../interfaces/path.interface";
+
+function dijkstra(
+    city: MappedCityInterface,
+    fromId: string,
+    toId: string,
+    forbidden: Set<string> = new Set(), // вершины которые нельзя посещать
+): { distance: number; path: string[] } {
+    const dist = new Map<string, number>();
+    const prev = new Map<string, string | null>();
+    const unvisited = new Set<string>();
+
+    for (const house of city.houses) {
+        if (forbidden.has(house.id) && house.id !== fromId && house.id !== toId) continue; // пропускаем запрещённые
+        dist.set(house.id, Infinity);
+        prev.set(house.id, null);
+    }
+
+    unvisited.add(fromId);
+    dist.set(fromId, 0);
+
+    while (unvisited.size > 0) {
+        let current: string | null = null;
+        let minDist = Infinity;
+        for (const id of unvisited) {
+            const d = dist.get(id) ?? Infinity;
+            if (d < minDist) { minDist = d; current = id; }
+        }
+
+        if (current === null || current === toId) break;
+        unvisited.delete(current);
+
+        const house = city.houseIndex.get(current);
+        if (!house) continue;
+
+        for (const street of house.edges) {
+            const neighborId = street.from === current ? street.to : street.from;
+            if (forbidden.has(neighborId)) continue;
+            const newDist = minDist + street.length;
+            if (newDist < (dist.get(neighborId) ?? Infinity)) {
+                dist.set(neighborId, newDist);
+                prev.set(neighborId, current);
+                unvisited.add(neighborId);
+            }
+        }
+    }
+
+    const path: string[] = [];
+    let current: string | null = toId;
+    while (current !== null) {
+        path.unshift(current);
+        current = prev.get(current) ?? null;
+    }
+
+    return {
+        distance: dist.get(toId) ?? Infinity,
+        path: path[0] === fromId ? path : [],
+    };
+}
+
+export function buildRouteInOrder(
+    city: MappedCityInterface,
+    waypoints: string[],
+    ignoreSimilarities: boolean = false
+): PathResponseInterface {
+    const fullPath: PathResponseInterface = { points: [], length: 0 };
+    const visited = new Set<string>();
+
+    for (const waypoint of waypoints) {
+        visited.add(waypoint);
+    }
+    fullPath.points.push({
+        id: waypoints[0],
+        role: 'main',
+    });
+
+    for (let i = 0; i < waypoints.length - 1; i++) {
+        const from = waypoints[i];
+        const to = waypoints[i + 1];
+
+        let forbidden: Set<string> = new Set();
+        if (!ignoreSimilarities) {
+            forbidden = new Set(visited);
+            forbidden.delete(from);
+            forbidden.delete(to);
+        }
+
+        let path = dijkstra(city, from, to, forbidden);
+        let segment = path.path;
+
+        if (segment.length === 0) {
+            console.warn(`No path from ${from} to ${to} without revisiting nodes`);
+            path = dijkstra(city, from, to);
+            segment = path.path;
+        }
+
+        for (let index = 1; index < segment.length; index++) {
+            if (!ignoreSimilarities) visited.add(segment[index]);
+            fullPath.points.push({
+                id: segment[index],
+                role: 'outer',
+            });
+        }
+        fullPath.length += path.distance;
+        fullPath.points[fullPath.points.length - 1].role = 'main';
+    }
+
+    return fullPath;
+}

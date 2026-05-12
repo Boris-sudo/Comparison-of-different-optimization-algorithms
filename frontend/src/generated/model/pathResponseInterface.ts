@@ -7,9 +7,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { PathResultItem } from './pathResultItem';
 
 
 export interface PathResponseInterface { 
-    points: Array<string>;
+    points: Array<PathResultItem>;
+    length: number;
 }
 

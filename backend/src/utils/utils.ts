@@ -18,3 +18,43 @@ export function getToken(request: koa.Request): string {
 }
 
 export type ActionInterface = 'change' | 'delete' | 'add';
+
+export class Queue<T> {
+    private items: T[] = [];
+
+    add(item: T): void {
+        this.items.push(item);
+    }
+
+    get(): T | undefined {
+        return this.items.shift();
+    }
+
+    isEmpty(): boolean {
+        return this.items.length === 0;
+    }
+}
+
+export class RandomQueue<T> {
+    private items: T[] = [];
+
+    add(item: T): void {
+        this.items.push(item);
+    }
+
+    get(): T | undefined {
+        const index = getRandomInt(0, this.items.length);
+        const item = this.items[index];
+        this.items[index] = this.items[this.items.length - 1];
+        this.items.pop();
+        return item;
+    }
+
+    size() {
+        return this.items.length;
+    }
+
+    isEmpty(): boolean {
+        return this.items.length === 0;
+    }
+}

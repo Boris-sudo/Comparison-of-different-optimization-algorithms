@@ -10,9 +10,6 @@
 
 
 export interface CityModelInterface { 
-    /**
-     * Construct a type with a set of properties K of type T
-     */
-    count: { [key: string]: number; };
+    count: number;
 }
 

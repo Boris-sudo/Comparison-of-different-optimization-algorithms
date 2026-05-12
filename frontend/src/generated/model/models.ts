@@ -6,6 +6,7 @@ export * from './houseInterface';
 export * from './modelType';
 export * from './pathPostInterface';
 export * from './pathResponseInterface';
+export * from './pathResultItem';
 export * from './registrationResponse';
 export * from './streetChangeInterface';
 export * from './streetInterface';

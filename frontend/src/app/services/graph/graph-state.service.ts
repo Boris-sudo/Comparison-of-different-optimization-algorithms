@@ -1,0 +1,164 @@
+import { Injectable, signal, computed } from '@angular/core';
+import { HouseInterface, StreetInterface, PathResultItem, ModelType } from '../../../generated';
+import * as d3 from 'd3';
+
+export interface D3Node extends d3.SimulationNodeDatum {
+    id: string;
+    category: number;
+    house: HouseInterface;
+    x?: number;
+    y?: number;
+    fx?: number | null;
+    fy?: number | null;
+}
+
+export interface D3Link extends d3.SimulationLinkDatum<D3Node> {
+    id: string;
+    length: number;
+    source: D3Node | string;
+    target: D3Node | string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class GraphStateService {
+    // ─── Graph data ───────────────────────────────────────────────────────────
+    houses: HouseInterface[] = [];
+    streets: StreetInterface[] = [];
+    streetSet = new Set<string>();
+    d3Nodes: D3Node[] = [];
+    d3Links: D3Link[] = [];
+
+    // ─── Selection ────────────────────────────────────────────────────────────
+    selectedHouse = signal<HouseInterface | null>(null);
+    selectedStreet = signal<StreetInterface | null>(null);
+    edgeSourceNode = signal<D3Node | null>(null);
+    editingStreetLength = signal<number>(0);
+
+    // ─── UI state ─────────────────────────────────────────────────────────────
+    editMode = signal<'select' | 'add-node' | 'add-edge'>('select');
+    activeTab = signal<'editor' | 'route'>('editor');
+    isLoading = signal(false);
+    isGenerating = signal(false);
+    isBuildingRoute = signal(false);
+    error = signal<string | null>(null);
+    graphInitialized = false;
+    newCityNodeCount = signal<number | null>(null);
+
+    // ─── Route ────────────────────────────────────────────────────────────────
+    routeResult = signal<PathResultItem[]>([]);
+    routeMainPoints = signal<string[]>([]);
+    routeOuterPoints = signal<string[]>([]);
+    routeLength = signal<number>(0);
+    routePrompt = signal('');
+    selectedAlgorithm = signal<ModelType>('Annealing' as ModelType);
+
+    // ─── Computed ─────────────────────────────────────────────────────────────
+    hasRoute = computed(() => this.routeResult().length > 0);
+
+    readonly houseCategories = [
+        { id: 0,  name: 'Дом',         icon: '🏠' },
+        { id: 1,  name: 'Парк',         icon: '🌳' },
+        { id: 2,  name: 'Кафе',         icon: '☕' },
+        { id: 3,  name: 'Пекарня',      icon: '🥐' },
+        { id: 4,  name: 'Ресторан',     icon: '🍽️' },
+        { id: 5,  name: 'Музей',        icon: '🏛️' },
+        { id: 6,  name: 'Галерея',      icon: '🎨' },
+        { id: 7,  name: 'Библиотека',   icon: '📚' },
+        { id: 8,  name: 'Книжный',      icon: '📖' },
+        { id: 9,  name: 'Супермаркет',  icon: '🛒' },
+        { id: 10, name: 'Рынок',        icon: '🏪' },
+        { id: 11, name: 'Аптека',       icon: '💊' },
+        { id: 12, name: 'Кинотеатр',    icon: '🎬' },
+        { id: 13, name: 'Театр',        icon: '🎭' },
+        { id: 14, name: 'Спортзал',     icon: '💪' },
+        { id: 15, name: 'Бассейн',      icon: '🏊' },
+        { id: 16, name: 'Школа',        icon: '🏫' },
+        { id: 17, name: 'Университет',  icon: '🎓' },
+        { id: 18, name: 'Церковь',      icon: '⛪' },
+        { id: 19, name: 'Больница',     icon: '🏥' },
+    ];
+
+    readonly availableAlgorithms = [
+        { id: 'Annealing' as ModelType, name: 'Simulated Annealing', description: 'Метрополис-отжиг' },
+        { id: 'Dfs'       as ModelType, name: 'DFS',                 description: 'Поиск в глубину' },
+        { id: 'Bfs'       as ModelType, name: 'BFS',                 description: 'Поиск в ширину' },
+        { id: 'AStar'     as ModelType, name: 'A*',                  description: 'Эвристический' },
+        { id: 'Aco'       as ModelType, name: 'ACO',                 description: 'Муравьиный алг.' },
+    ];
+
+    // ─── Methods ──────────────────────────────────────────────────────────────
+
+    buildStreetList() {
+        this.streets = [];
+        this.streetSet.clear();
+        for (const house of this.houses) {
+            for (const edge of house.edges || []) {
+                if (!this.streetSet.has(edge.id)) {
+                    this.streetSet.add(edge.id);
+                    this.streets.push(edge);
+                }
+            }
+        }
+    }
+
+    buildD3Data() {
+        const existingPositions = new Map<string, { x: number; y: number }>();
+        this.d3Nodes.forEach(n => {
+            if (n.x !== undefined && n.y !== undefined) {
+                existingPositions.set(n.id, { x: n.x, y: n.y });
+            }
+        });
+
+        this.d3Nodes = this.houses.map(house => {
+            const pos = existingPositions.get(house.id);
+            return { id: house.id, category: house.category, house, x: pos?.x, y: pos?.y };
+        });
+
+        const nodeMap = new Map(this.d3Nodes.map(n => [n.id, n]));
+        this.d3Links = this.streets
+            .filter(s => nodeMap.has(s.from) && nodeMap.has(s.to))
+            .map(street => ({
+                id: street.id,
+                length: street.length,
+                source: street.from,
+                target: street.to,
+            }));
+    }
+
+    setRoute(points: PathResultItem[], length: number) {
+        this.routeResult.set(points);
+        this.routeLength.set(length);
+        const main: string[] = [];
+        const outer: string[] = [];
+        for (const p of points) {
+            if (p.role === 'main') main.push(p.id);
+            else outer.push(p.id);
+        }
+        this.routeMainPoints.set(main);
+        this.routeOuterPoints.set(outer);
+    }
+
+    clearRoute() {
+        this.routeResult.set([]);
+        this.routeMainPoints.set([]);
+        this.routeOuterPoints.set([]);
+        this.routeLength.set(0);
+    }
+
+    getCategoryForHouse(houseId: string): number {
+        return this.houses.find(h => h.id === houseId)?.category ?? -1;
+    }
+
+    reset() {
+        this.houses = [];
+        this.streets = [];
+        this.streetSet.clear();
+        this.d3Nodes = [];
+        this.d3Links = [];
+        this.selectedHouse.set(null);
+        this.selectedStreet.set(null);
+        this.edgeSourceNode.set(null);
+        this.graphInitialized = false;
+        this.clearRoute();
+    }
+}

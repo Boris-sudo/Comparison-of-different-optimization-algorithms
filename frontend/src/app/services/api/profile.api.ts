@@ -1,8 +1,8 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { JwtService } from '../jwt';
+import { JwtService } from './jwt';
 import { DefaultService, UserResponse } from "../../../generated";
-import { ApiService } from "../api";
+import { ApiService } from "./api";
 
 @Injectable({
     providedIn: 'root'

@@ -4,6 +4,8 @@ import { HouseInterface } from "../../interfaces/house.interface";
 import { getDistance } from "../city.service";
 import { InternalServerError } from "../../utils/errors";
 import { StreetInterface } from "../../interfaces/street.interface";
+import { setRandomFallback } from "bcryptjs";
+import { getCategory } from "../category.service";
 
 export class DfsService {
     private city: MappedCityInterface;
@@ -69,7 +71,7 @@ export class DfsService {
 
         /** calculating categories similarity */
         for (const key of Object.keys(promptElement.categories!))
-            if (item.category.toString() === key)
+            if (getCategory(item.category).name === key)
                 similarity += promptElement.categories![key];
 
         /** calculating distance to previous point **/
@@ -96,7 +98,7 @@ export class DfsService {
 
     private findPoints() {
         // setting default value of `items` array
-        this.items = [[{ location: this.startPosition }]];
+        this.items = [[{ location: { ...this.startPosition, edges: [...this.startPosition.edges] } }]];
         for (let index = 0; index < this.keys.length; index++)
             this.items.push([]);
 
@@ -106,7 +108,7 @@ export class DfsService {
                 const house = this.city.houseIndex.get(this.keys[index].id!);
                 if (house === undefined) throw new InternalServerError(`house ${ index } not found`);
                 this.items[index + 1].push({
-                    location: house
+                    location: { ...house, edges: [...house.edges] }
                 });
             }
         }
@@ -124,11 +126,13 @@ export class DfsService {
 
                 sort_places.sort((a, b) => b.similarity - a.similarity);
                 sort_places = sort_places.slice(0, this.MAX_ITEMS_COUNT);
+                while (sort_places.length > 0 && sort_places[sort_places.length - 1].similarity == 0)
+                    sort_places.pop();
 
                 // getting top places
                 for (const place of sort_places)
-                    this.items[index].push({
-                        location: place.house,
+                    this.items[index + 1].push({
+                        location: { ...place.house, edges: [...place.house.edges] },
                     });
             }
         }

@@ -21,10 +21,20 @@ const koaAuthenticationRecasted = koaAuthentication as (req: KRequest, securityN
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "PathResultItem": {
+        "dataType": "refObject",
+        "properties": {
+            "id": {"dataType":"string","required":true},
+            "role": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["main"]},{"dataType":"enum","enums":["outer"]}],"required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "PathResponseInterface": {
         "dataType": "refObject",
         "properties": {
-            "points": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "points": {"dataType":"array","array":{"dataType":"refObject","ref":"PathResultItem"},"required":true},
+            "length": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
     },
@@ -32,6 +42,16 @@ const models: TsoaRoute.Models = {
     "ModelType": {
         "dataType": "refAlias",
         "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["Dfs"]},{"dataType":"enum","enums":["Bfs"]},{"dataType":"enum","enums":["Annealing"]},{"dataType":"enum","enums":["ACO"]},{"dataType":"enum","enums":["A*"]}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PathPostInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "model": {"ref":"ModelType","required":true},
+            "prompt": {"dataType":"string","required":true},
+            "startPoint": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "StreetInterface": {
@@ -58,16 +78,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "PathPostInterface": {
-        "dataType": "refObject",
-        "properties": {
-            "model": {"ref":"ModelType","required":true},
-            "prompt": {"dataType":"string","required":true},
-            "startPoint": {"ref":"HouseInterface","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "CityInterface": {
         "dataType": "refObject",
         "properties": {
@@ -85,15 +95,10 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Record_number.number_": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"double"},"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "CityModelInterface": {
         "dataType": "refObject",
         "properties": {
-            "count": {"ref":"Record_number.number_","required":true},
+            "count": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
     },

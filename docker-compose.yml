@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: route-optimizer-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: route-optimizer-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - REDIS_URL=redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/backend
+      - /backend/node_modules
+    command: nodemon --exec "ts-node" "src/server.ts"
+
+  frontend:
+    image: nginx:alpine
+    container_name: route-optimizer-frontend
+    ports:
+      - "4200:80"
+    volumes:
+      - ./frontend/dist/frontend:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+
+volumes:
+  redis_data:

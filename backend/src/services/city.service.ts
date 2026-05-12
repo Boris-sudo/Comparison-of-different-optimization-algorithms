@@ -29,24 +29,28 @@ export const mapCity = async function (
 }
 
 /**
- * @param {Record<number, number>} categories - count of houses by category
+ * @param {number} count - count of houses
  **/
 export const createRandomCity = async function (
-    categories?: Record<number, number>
+    count?: number
 ): Promise<MappedCityInterface> {
     const categories_count = CategoryService.categoriesCount();
+    let categories: Record<number, number> = {};
+    for (let i = 0; i < categories_count; i++)
+        categories[i] = 0;
 
-    if (categories === undefined) {
-        const count = getRandomInt(2, 6);
-
-        categories = {};
-        for (let _ = 0; _ < count; _++) {
-            let category = getRandomInt(0, categories_count);
-            while (categories[category] !== undefined)
-                category = getRandomInt(0, categories_count);
-
-            categories[category] = getRandomInt(1, 3);
-        }
+    if (count === undefined) {
+        for (let index = 0; index < categories_count; index++)
+            categories[index] = (index == 0 ? 1 : getRandomInt(1, 3));
+    } else {
+        while (count > 0)
+            for (let index = 0; index < categories_count; index++) {
+                const cnt = Math.min(count, (index == 0 ? 1 : getRandomInt(1, 3)));
+                if (index == 0 && categories[index] == 1) continue;
+                categories[index] += cnt;
+                count -= cnt;
+                if (count === 0) break;
+            }
     }
 
     return generateCityByCategories(categories);

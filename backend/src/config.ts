@@ -21,7 +21,7 @@ const config: Config = {
     nodeEnv: process.env.NODE_ENV || 'development',
     port: +(process.env.PORT || 3000),
     redis: redis,
-    OpenAiApiKey: process.env.OPENAiApiKey || 'gaysex', // todo change
+    OpenAiApiKey: process.env.OPEN_ROUTER_API_KEY || '',
 }
 
 export { config }

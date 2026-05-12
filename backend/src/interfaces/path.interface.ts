@@ -2,14 +2,26 @@ import { HouseInterface } from "./house.interface";
 
 export type ModelType = 'Dfs' | 'Bfs' | 'Annealing' | 'ACO' | 'A*';
 
-export interface PathPostInterface {
+export interface PathCreateInterface {
     model: ModelType;
     prompt: string;
     startPoint: HouseInterface;
 }
 
+export interface PathPostInterface {
+    model: ModelType;
+    prompt: string;
+    startPoint: string;
+}
+
+export interface PathResultItem {
+    id: string,
+    role: 'main' | 'outer'
+}
+
 export interface PathResponseInterface {
-    points: Array<string>; // ids of the path objects
+    points: Array<PathResultItem>; // ids of the path objects
+    length: number;
 }
 
 export interface LocationItem {

@@ -1,179 +1,333 @@
-<div class="main-content">
-    @if (isLoading) {
-        <div class="loading-overlay flex-center">
+<div class="home-layout">
+    @if (state.isLoading()) {
+        <div class="loading-screen">
             <div class="spinner"></div>
-            <p class="text-secondary">Загрузка...</p>
+            <p>Загрузка...</p>
         </div>
     } @else if (profileApi.notAuthenticated()) {
-        <div class="welcome-screen flex-center">
-            <div class="card welcome-card">
+        <div class="welcome-screen">
+            <div class="welcome-card">
+                <div class="welcome-icon">🗺️</div>
                 <h1 class="welcome-title">RouteOptimizer</h1>
-                <p class="text-secondary">Сравнение алгоритмов оптимизации маршрутов</p>
-                <button class="btn btn--primary btn--large" (click)="profileApi.register()">
-                    Начать работу
+                <p class="welcome-sub">Интерактивное сравнение алгоритмов оптимизации маршрутов</p>
+                <button class="btn-primary" (click)="register()">
+                    Начать работу →
                 </button>
             </div>
         </div>
     } @else {
-        <div class="tabs">
-            <button class="tab" [class.tab--active]="activeTab === 'editor'" (click)="onTabChange('editor')">
-                Редактор графа
-            </button>
-            <button class="tab" [class.tab--active]="activeTab === 'route'" (click)="onTabChange('route')">
-                Построение маршрута
-            </button>
-        </div>
+        <div class="app-shell">
 
-        @if (activeTab === 'editor') {
-            <div class="editor-layout">
-                <div class="graph-container card">
-    <!-- Тулбар -->
-    <div class="graph-toolbar">
-        <button
-                class="tool-btn"
-                [class.tool-btn--active]="editMode === 'select'"
-                (click)="setEditMode('select')"
-                title="Выбор"
-        >
-            ↖ Выбор
-        </button>
-        <button
-                class="tool-btn"
-                [class.tool-btn--active]="editMode === 'add-node'"
-                (click)="setEditMode('add-node')"
-                title="Добавить вершину"
-        >
-            ＋ Вершина
-        </button>
-        <button
-                class="tool-btn"
-                [class.tool-btn--active]="editMode === 'add-edge'"
-                (click)="setEditMode('add-edge')"
-                title="Добавить ребро"
-        >
-            ／ Ребро
-        </button>
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <span class="sidebar-logo">🗺️</span>
+                    <span class="sidebar-title">RouteOpt</span>
+                </div>
 
-        @if (editMode === 'add-edge' && edgeSourceNode) {
-            <span class="tool-hint">
-                ✓ {{ houseCategories[edgeSourceNode.category]?.icon }}
-                выбрана — кликните на вторую вершину
-            </span>
-        } @else if (editMode === 'add-edge') {
-            <span class="tool-hint">Кликните на первую вершину</span>
-        } @else if (editMode === 'add-node') {
-            <span class="tool-hint">Кликните по пустому месту</span>
-        }
-    </div>
-
-    <svg #graphSvg class="graph-svg"></svg>
-
-    <div class="graph-info">
-        <span class="badge badge--success">{{ houses.length }} зданий</span>
-        <span class="badge badge--warning">{{ streets.length }} дорог</span>
-    </div>
-</div>
-
-                @if (selectedHouse) {
-                    <div class="panel card">
-                        <h3>Редактирование здания</h3>
-                        <p class="text-muted">
-                            {{ houseCategories[selectedHouse.category]?.icon }}
-                            {{ houseCategories[selectedHouse.category]?.name }}
-                        </p>
-                        <div class="panel-section">
-                            <label>Выберите категорию</label>
-                            <div class="category-grid">
-                                @for (cat of houseCategories; track cat.id) {
-                                    <button
-                                            class="category-btn"
-                                            [class.category-btn--active]="selectedHouse.category === cat.id"
-                                            (click)="changeHouseCategory(cat.id)"
-                                    >
-                                        <span class="category-icon">{{ cat.icon }}</span>
-                                        <span class="category-name">{{ cat.name }}</span>
-                                    </button>
-                                }
-                            </div>
-                        </div>
-                        <div class="panel-actions">
-                            <button class="btn btn--danger" (click)="deleteHouse()">
-                                Удалить здание
-                            </button>
-                            <button class="btn btn--secondary" (click)="selectedHouse = null; updateNodeStyles()">
-                                Отмена
-                            </button>
-                        </div>
-                    </div>
-                } @else {
-                    <div class="panel card panel--empty">
-                        <p class="text-muted">Нажмите на здание для редактирования</p>
-                    </div>
-                }
-            </div>
-        } @else {
-            <div class="route-layout">
-                <div class="card route-card">
-                    <h3>Построение маршрута</h3>
-                    <div class="form-group">
-                        <label>Описание маршрута</label>
-                        <textarea
-                                class="input input--textarea"
-                                [(ngModel)]="routePrompt"
-                                placeholder="Например: Ужин в ресторане, затем культурная программа"
-                                rows="3"
-                        ></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Алгоритм</label>
-                        <div class="algorithm-grid">
-                            @for (algo of availableAlgorithms; track algo.id) {
-                                <button
-                                        class="algo-btn"
-                                        [class.algo-btn--active]="selectedAlgorithm === algo.id"
-                                        (click)="selectedAlgorithm = algo.id"
-                                >
-                                    <span class="algo-name">{{ algo.name }}</span>
-                                    <span class="algo-desc">{{ algo.description }}</span>
-                                </button>
-                            }
-                        </div>
-                    </div>
-                    <button
-                            class="btn btn--primary btn--full"
-                            (click)="buildRoute()"
-                            [disabled]="isBuildingRoute || !routePrompt.trim()"
-                    >
-                        @if (isBuildingRoute) {
-                            <span class="spinner spinner--small"></span>
-                            Построение...
-                        } @else {
-                            Построить маршрут
-                        }
+                <nav class="sidebar-nav">
+                    <button class="nav-item"
+                            [class.nav-item--active]="state.activeTab() === 'editor'"
+                            (click)="onTabChange('editor')">
+                        <span class="nav-icon">⬡</span>
+                        <span>Граф</span>
                     </button>
-                    @if (error) {
-                        <div class="error-message">{{ error }}</div>
-                    }
-                    @if (routeResult.length > 0) {
-                        <div class="route-result">
-                            <h4>Маршрут ({{ routeResult.length }} точек)</h4>
-                            <div class="route-path">
-                                @for (pointId of routeResult; track pointId; let last = $last) {
-                                    <span class="route-point">
-                                        {{ houseCategories[getCategoryForHouse(pointId)]?.icon || '📍' }}
-                                        {{ getCategoryForHouse(pointId) >= 0
-                                        ? houseCategories[getCategoryForHouse(pointId)].name
-                                        : pointId.slice(0, 8) }}
-                                    </span>
-                                    @if (!last) {
-                                        <span class="route-arrow">→</span>
-                                    }
-                                }
-                            </div>
+                    <button class="nav-item"
+                            [class.nav-item--active]="state.activeTab() === 'route'"
+                            (click)="onTabChange('route')">
+                        <span class="nav-icon">◎</span>
+                        <span>Маршрут</span>
+                    </button>
+                </nav>
+
+                <div class="sidebar-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">{{ state.houses.length }}</span>
+                        <span class="stat-label">вершин</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ state.streets.length }}</span>
+                        <span class="stat-label">рёбер</span>
+                    </div>
+                    @if (state.hasRoute()) {
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-value">{{ state.routeLength() }}</span>
+                            <span class="stat-label">длина</span>
                         </div>
                     }
                 </div>
-            </div>
-        }
+            </aside>
+
+            <!-- Main -->
+            <main class="main-area">
+
+                @if (state.activeTab() === 'editor') {
+                    <div class="editor-view">
+
+                        <div class="graph-wrap">
+                            <div class="graph-toolbar">
+                                <div class="toolbar-tools">
+                                    <button class="tool-btn"
+                                            [class.active]="state.editMode() === 'select'"
+                                            (click)="setEditMode('select')"
+                                            title="Выбор">
+                                        <span>↖</span> Выбор
+                                    </button>
+                                    <button class="tool-btn"
+                                            [class.active]="state.editMode() === 'add-node'"
+                                            (click)="setEditMode('add-node')"
+                                            title="Добавить вершину">
+                                        <span>＋</span> Вершина
+                                    </button>
+                                    <button class="tool-btn"
+                                            [class.active]="state.editMode() === 'add-edge'"
+                                            (click)="setEditMode('add-edge')"
+                                            title="Добавить ребро">
+                                        <span>⟵</span> Ребро
+                                    </button>
+                                </div>
+
+                                <div class="toolbar-right">
+                                    @if (state.editMode() === 'add-edge') {
+                                        <span class="toolbar-hint">
+                                            @if (state.edgeSourceNode()) {
+                                                ✓ {{ state.houseCategories[state.edgeSourceNode()!.category]?.icon }}
+                                                → кликните вторую вершину
+                                            } @else {
+                                                Кликните первую вершину
+                                            }
+                                        </span>
+                                    }
+                                    @if (state.editMode() === 'add-node') {
+                                        <span class="toolbar-hint">Кликните по пустому месту</span>
+                                    }
+                                    @if (state.hasRoute()) {
+                                        <button class="tool-btn tool-btn--clear" (click)="clearRoute()">
+                                            ✕ Сбросить маршрут
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+
+                            <svg #graphSvg class="graph-svg"></svg>
+                        </div>
+
+                        <!-- Side panel -->
+                        <div class="side-panel">
+
+                            @if (state.selectedHouse()) {
+                                <div class="panel-card">
+                                    <div class="panel-card-header">
+                                        <span class="panel-icon">
+                                            {{ state.houseCategories[state.selectedHouse()!.category]?.icon }}
+                                        </span>
+                                        <div>
+                                            <div class="panel-card-title">
+                                                {{ state.houseCategories[state.selectedHouse()!.category]?.name }}
+                                            </div>
+                                            <div class="panel-card-sub">Редактирование вершины</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="panel-section-label">Категория</div>
+                                    <div class="category-grid">
+                                        @for (cat of state.houseCategories; track cat.id) {
+                                            <button
+                                                    class="cat-btn"
+                                                    [class.cat-btn--active]="state.selectedHouse()!.category === cat.id"
+                                                    (click)="changeHouseCategory(cat.id)"
+                                            >
+                                                <span>{{ cat.icon }}</span>
+                                                <span class="cat-name">{{ cat.name }}</span>
+                                            </button>
+                                        }
+                                    </div>
+
+                                    <div class="panel-actions">
+                                        <button class="action-btn action-btn--danger" (click)="deleteHouse()">
+                                            🗑 Удалить
+                                        </button>
+                                        <button class="action-btn action-btn--ghost"
+                                                (click)="state.selectedHouse.set(null); render.updateNodeStyles()">
+                                            Отмена
+                                        </button>
+                                    </div>
+                                </div>
+
+                            } @else if (state.selectedStreet()) {
+                                <div class="panel-card">
+                                    <div class="panel-card-header">
+                                        <span class="panel-icon">🛣️</span>
+                                        <div>
+                                            <div class="panel-card-title">Ребро</div>
+                                            <div class="panel-card-sub">
+                                                {{ state.selectedStreet()!.from.slice(0, 6) }}…
+                                                → {{ state.selectedStreet()!.to.slice(0, 6) }}…
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="panel-section-label">Длина</div>
+                                    <input
+                                            class="field-input"
+                                            type="number"
+                                            [(ngModel)]="state.editingStreetLength"
+                                            min="1"
+                                            placeholder="Длина ребра"
+                                    />
+
+                                    <div class="panel-actions" style="margin-top: 1rem">
+                                        <button class="action-btn action-btn--primary" (click)="saveStreetLength()">
+                                            💾 Сохранить
+                                        </button>
+                                        <button class="action-btn action-btn--danger" (click)="deleteStreet()">
+                                            🗑 Удалить
+                                        </button>
+                                        <button class="action-btn action-btn--ghost"
+                                                (click)="state.selectedStreet.set(null); render.updateLinkStyles()">
+                                            Отмена
+                                        </button>
+                                    </div>
+                                </div>
+
+                            } @else if (state.hasRoute()) {
+                                <div class="panel-card">
+                                    <div class="panel-card-title" style="margin-bottom: 1rem">
+                                        Маршрут · {{ state.routeMainPoints().length }} точек
+                                    </div>
+                                    <div class="route-list">
+                                        @for (pointId of state.routeMainPoints(); track pointId; let i = $index; let last = $last) {
+                                            <div class="route-list-item">
+                                                <div class="route-num">{{ i + 1 }}</div>
+                                                <span class="route-list-icon">
+                                                    {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.icon || '📍' }}
+                                                </span>
+                                                <span class="route-list-name">
+                                                    {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.name || '—' }}
+                                                </span>
+                                            </div>
+                                            @if (!last) {
+                                                <div class="route-list-connector"></div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+
+                            } @else {
+                                <div class="panel-card panel-empty">
+                                    <div class="panel-empty-icon">⬡</div>
+                                    <p>Выберите вершину<br>для редактирования</p>
+                                </div>
+                            }
+
+                            <!-- Generate city -->
+                            <div class="panel-card" style="margin-top: 1rem">
+                                <div class="panel-card-header">
+                                    <span class="panel-icon">🏙️</span>
+                                    <div>
+                                        <div class="panel-card-title">Новый граф</div>
+                                        <div class="panel-card-sub">Сгенерировать случайный город</div>
+                                    </div>
+                                </div>
+
+                                <div class="panel-section-label">Количество вершин (необязательно)</div>
+                                <input
+                                        class="field-input"
+                                        type="number"
+                                        [(ngModel)]="state.newCityNodeCount"
+                                        placeholder="Случайное количество"
+                                        min="3"
+                                        max="50"
+                                />
+
+                                <button
+                                        class="action-btn action-btn--primary"
+                                        style="width: 100%; margin-top: 1rem; justify-content: center"
+                                        (click)="generateCity()"
+                                        [disabled]="state.isGenerating()"
+                                >
+                                    @if (state.isGenerating()) {
+                                        <span class="spinner spinner--sm"></span> Генерация...
+                                    } @else {
+                                        🎲 Сгенерировать
+                                    }
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                }
+
+                @if (state.activeTab() === 'route') {
+                    <div class="route-view">
+                        <div class="route-form-card">
+                            <h2 class="route-form-title">Построение маршрута</h2>
+
+                            <label class="field-label">Описание</label>
+                            <textarea
+                                    class="field-textarea"
+                                    [(ngModel)]="state.routePrompt"
+                                    placeholder="Например: Культурная прогулка — музей, галерея, кафе"
+                                    rows="3"
+                            ></textarea>
+
+                            <label class="field-label" style="margin-top: 1.5rem">Алгоритм</label>
+                            <div class="algo-grid">
+                                @for (algo of state.availableAlgorithms; track algo.id) {
+                                    <button
+                                            class="algo-card"
+                                            [class.algo-card--active]="state.selectedAlgorithm() === algo.id"
+                                            (click)="state.selectedAlgorithm.set(algo.id)"
+                                    >
+                                        <span class="algo-card-name">{{ algo.name }}</span>
+                                        <span class="algo-card-desc">{{ algo.description }}</span>
+                                    </button>
+                                }
+                            </div>
+
+                            <button
+                                    class="btn-primary btn-build"
+                                    (click)="buildRoute()"
+                                    [disabled]="state.isBuildingRoute() || !state.routePrompt().trim()"
+                            >
+                                @if (state.isBuildingRoute()) {
+                                    <span class="spinner spinner--sm"></span> Строим маршрут...
+                                } @else {
+                                    Построить маршрут →
+                                }
+                            </button>
+
+                            @if (state.error()) {
+                                <div class="error-box">{{ state.error() }}</div>
+                            }
+
+                            @if (state.hasRoute()) {
+                                <div class="route-result-block">
+                                    <div class="route-result-header">
+                                        <span>Маршрут готов</span>
+                                        <span class="route-result-badge">
+                                            {{ state.routeMainPoints().length }} точек
+                                        </span>
+                                    </div>
+                                    <p class="route-result-hint">Открыт во вкладке «Граф»</p>
+                                    <div class="route-chips">
+                                        @for (pointId of state.routeMainPoints(); track pointId; let last = $last) {
+                                            <span class="route-chip">
+                                                {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.icon || '📍' }}
+                                                {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.name || '—' }}
+                                            </span>
+                                            @if (!last) {
+                                                <span class="chip-arrow">→</span>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+            </main>
+        </div>
     }
 </div>

@@ -18,5 +18,5 @@ export interface CityPostInterface {
 }
 
 export interface CityModelInterface {
-    count: Record<number, number>;
+    count: number;
 }

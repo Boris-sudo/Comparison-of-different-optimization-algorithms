@@ -18,6 +18,7 @@ model/modelType.ts
 model/models.ts
 model/pathPostInterface.ts
 model/pathResponseInterface.ts
+model/pathResultItem.ts
 model/registrationResponse.ts
 model/streetChangeInterface.ts
 model/streetInterface.ts

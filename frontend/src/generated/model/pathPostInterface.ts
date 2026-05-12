@@ -7,14 +7,13 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { HouseInterface } from './houseInterface';
 import { ModelType } from './modelType';
 
 
 export interface PathPostInterface { 
     model: ModelType;
     prompt: string;
-    startPoint: HouseInterface;
+    startPoint: string;
 }
 export namespace PathPostInterface {
 }
