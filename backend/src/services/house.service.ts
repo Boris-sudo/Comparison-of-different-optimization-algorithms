@@ -2,6 +2,7 @@ import { HouseChangeInterface, HouseInterface } from "../interfaces/house.interf
 import { MappedCityInterface } from "../interfaces/city.interface";
 import { InternalServerError } from "../utils/errors";
 
+/** Changes house to a new model in city **/
 export const changeHouse = async function (
     city: MappedCityInterface,
     house: HouseChangeInterface

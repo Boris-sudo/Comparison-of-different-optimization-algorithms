@@ -3,11 +3,10 @@ import { Controller } from "@tsoa/runtime";
 import { Get, OperationId, Post, Response, Route, Security, Tags, Request } from "tsoa";
 
 import { RegistrationResponse, UserResponse } from "../interfaces/user.interface";
-import { createNewUser } from "../services/user.service";
 import { redis } from "../server";
 
 import * as crypto from "../utils/crypto";
-
+import * as UserService from "../services/user.service";
 
 @Route('auth')
 export class UserController extends Controller {
@@ -16,7 +15,7 @@ export class UserController extends Controller {
     @Response<RegistrationResponse>(200, "succeed")
     @OperationId("register")
     public async register(): Promise<RegistrationResponse> {
-        const user = await createNewUser();
+        const user = await UserService.createNewUser();
         const token = crypto.generateBearerToken();
         await redis.set(token, JSON.stringify(user));
         return { token: 'Bearer: ' + token };

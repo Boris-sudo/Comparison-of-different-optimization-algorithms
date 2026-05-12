@@ -3,7 +3,7 @@ import { Controller } from "@tsoa/runtime";
 import { Body, OperationId, Post, Request, Response, Route, Security, Tags } from "tsoa";
 import { redis } from "../server";
 
-import { CityInterface, CityModelInterface } from "../interfaces/city.interface";
+import { CityModelInterface } from "../interfaces/city.interface";
 import { StreetChangeInterface } from "../interfaces/street.interface";
 import { HouseChangeInterface } from "../interfaces/house.interface";
 import { UserResponse } from "../interfaces/user.interface";

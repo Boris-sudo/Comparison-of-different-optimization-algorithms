@@ -1,18 +1,25 @@
 import OpenAI from "openai";
 import { config } from "../config";
 
-import { LocationItem, PathCreateInterface, PathResponseInterface, PromptElement } from "../interfaces/path.interface";
+import {
+    LocationItem, PathAnalyzeDuration,
+    PathCreateInterface,
+    PathResponseInterface,
+    PromptElement
+} from "../interfaces/path.interface";
 import { MappedCityInterface } from "../interfaces/city.interface";
+import { AnnealingService } from "./algorithms/annealing.service";
+import { DfsService } from "./algorithms/dfs.service";
+import { buildRouteInOrder } from "./path-build.service";
 
 import * as CategoryService from './category.service';
-import { AnnealingService } from "./algorithms/annealing.service";
-import { buildRouteInOrder } from "./path-build.service";
 
 const openai = new OpenAI({
     apiKey: config.OpenAiApiKey,
     baseURL: 'https://openrouter.ai/api/v1',
 });
 
+/** Function to return main openai prompt text **/
 const buildBasePrompt = function (): string {
     const categories = CategoryService.getCategories().map(c => c.name).join('\n');
 
@@ -116,6 +123,7 @@ ${ categories }
 ### ОТВЕТ`;
 };
 
+/** Builds prompt for openai model from user prompt **/
 const buildPrompt = function (userInput: string): string {
     return buildBasePrompt().replace("{USER_INPUT}", userInput);
 };
@@ -158,12 +166,17 @@ const parsePrompt = async function (
 
     return parsed;
 }
+
+/** Creates path in city by user prompt **/
 export const createPath = async function (
     city: MappedCityInterface,
     path: PathCreateInterface
 ): Promise<PathResponseInterface> {
-    // todo check pre work on prompt
+    const start_time = Date.now();
+    const duration_result: PathAnalyzeDuration = { network: 0, algo: 0 };
+
     const points: PromptElement[] = await parsePrompt(path.prompt);
+    duration_result.network = Date.now() - start_time;
 
     let pathResponse: Array<LocationItem> = [];
     switch (path.model) {
@@ -173,7 +186,6 @@ export const createPath = async function (
             break;
         }
         case "Dfs": {
-            const { DfsService } = await import("./algorithms/dfs.service");
             const model = new DfsService(city, points, path.startPoint);
             pathResponse = await model.generate();
             break;
@@ -196,5 +208,9 @@ export const createPath = async function (
     for (const locationItem of pathResponse)
         points_ids.push(locationItem.location.id);
 
-    return buildRouteInOrder(city, points_ids);
+    duration_result.network = Date.now() - start_time - duration_result.network;
+
+    const result = buildRouteInOrder(city, points_ids);
+
+    return { ...result, duration: duration_result } as PathResponseInterface;
 }

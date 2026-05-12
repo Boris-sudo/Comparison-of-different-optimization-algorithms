@@ -1,11 +1,10 @@
 import { MappedCityInterface } from "../../interfaces/city.interface";
 import { LocationItem, PromptElement } from "../../interfaces/path.interface";
 import { HouseInterface } from "../../interfaces/house.interface";
-import { getDistance } from "../city.service";
 import { InternalServerError } from "../../utils/errors";
 import { StreetInterface } from "../../interfaces/street.interface";
-import { setRandomFallback } from "bcryptjs";
 import { getCategory } from "../category.service";
+import { dijkstra } from "../path-build.service";
 
 export class DfsService {
     private city: MappedCityInterface;
@@ -48,15 +47,24 @@ export class DfsService {
      * then we will make a dfs on a new graph
      **/
     async generate(): Promise<LocationItem[]> {
+        let start = Date.now();
+        console.log("\x1b[36m[DFS]\x1b[0m generation has been started: ", (Date.now() - start), "ms");
+        start = Date.now();
+
         this.findPoints();
+        console.log("\x1b[36m[DFS]\x1b[0m points for prompt were found: ", (Date.now() - start), "ms");
+        start = Date.now();
 
         this.buildGraph();
+        console.log("\x1b[36m[DFS]\x1b[0m graph was build: ", (Date.now() - start), "ms");
+        start = Date.now();
 
         for (const [item, _] of this.items)
             this.result.push(item);
         this.durations.set(this.result[0].location.id, 0);
 
         this.dfs(0, 0);
+        console.log("\x1b[36m[DFS]\x1b[0m algorithm finished: ", (Date.now() - start), "ms");
 
         return this.result;
     }
@@ -77,13 +85,13 @@ export class DfsService {
         /** calculating distance to previous point **/
         let prev_distance = Infinity;
         for (const house of this.items[categoryIndex])
-            prev_distance = Math.min(prev_distance, getDistance(this.city, house.location.id, item.id));
+            prev_distance = Math.min(prev_distance, dijkstra(this.city, house.location.id, item.id).distance);
 
         /** calculating distance to the next point if it exists **/
         let next_distance = Infinity;
         for (let next_index = categoryIndex + 1; next_index < this.keys.length; next_index++) {
             if (this.keys[next_index].type !== 'fixed' || this.items[next_index + 1].length === 0) continue;
-            next_distance = getDistance(this.city, this.items[next_index + 1][0].location.id, item.id);
+            next_distance = dijkstra(this.city, this.items[next_index + 1][0].location.id, item.id).distance;
             break;
         }
 
@@ -96,6 +104,7 @@ export class DfsService {
         return similarity;
     }
 
+    /** Finds points for new each key **/
     private findPoints() {
         // setting default value of `items` array
         this.items = [[{ location: { ...this.startPosition, edges: [...this.startPosition.edges] } }]];
@@ -138,16 +147,17 @@ export class DfsService {
         }
     }
 
+    /** Builds new graph **/
     private buildGraph() {
         for (let index = 0; index < this.items.length; index++) {
             if (index != 0) { // adding edges
                 for (const from of this.items[index - 1]) {
                     for (const to of this.items[index]) {
-                        const street = {
+                        const street: StreetInterface = {
                             id: `${ from.location.id }:${ to.location.id }`,
                             from: from.location.id,
                             to: to.location.id,
-                            length: getDistance(this.city, from.location.id, to.location.id)
+                            length: dijkstra(this.city, from.location.id, to.location.id).distance
                         };
                         from.location.edges.push(street);
                         this.graph.streetIndex.set(street.id, street);
@@ -163,6 +173,7 @@ export class DfsService {
         }
     }
 
+    /** Builds optimized path in new graph **/
     private dfs(index: number, duration: number) {
         if (index === this.items.length - 1) return;
 

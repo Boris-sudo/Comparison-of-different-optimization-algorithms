@@ -19,9 +19,15 @@ export interface PathResultItem {
     role: 'main' | 'outer'
 }
 
+export interface PathAnalyzeDuration {
+    algo: number;
+    network: number;
+}
+
 export interface PathResponseInterface {
     points: Array<PathResultItem>; // ids of the path objects
     length: number;
+    duration: PathAnalyzeDuration;
 }
 
 export interface LocationItem {

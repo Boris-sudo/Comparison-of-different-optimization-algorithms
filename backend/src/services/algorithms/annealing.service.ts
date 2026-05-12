@@ -1,12 +1,10 @@
 import { LocationItem, PromptElement } from "../../interfaces/path.interface";
-
 import { MappedCityInterface } from "../../interfaces/city.interface";
 import { HouseInterface } from "../../interfaces/house.interface";
 import { InternalServerError } from "../../utils/errors";
-import { getDistance } from "../city.service";
 import { getRandomInt } from "../../utils/utils";
 import { getCategory } from "../category.service";
-import { buildRouteInOrder } from "../path-build.service";
+import { buildRouteInOrder, dijkstra } from "../path-build.service";
 
 export class AnnealingService {
     /* parsed elements of the prompt */
@@ -18,20 +16,13 @@ export class AnnealingService {
 
     startPosition!: HouseInterface;
 
-    distancesMatrix: number[][][] = [];
-    durationsMatrix: number[][][] = [];
-
     /** Maximum iterations of annealing algorithm */
     private readonly ITERATIONS = 1e5;
     /** Annealing temperature multiplier */
     private readonly TEMPERATURE_MULTIPLIER = 0.9;
     /** max elements count in items[i] */
     private readonly MAX_ITEMS_COUNT = 29;
-    /** maximum count of items after pre similarity calculation */
-    private readonly MAX_ITEMS_PRE_COUNT = 29;
-    /**  */
-    private readonly ITEM_SIMILARITY_MULTIPLIER = 1e4;
-    /**  */
+    /** changes count during one annealing iteration */
     private readonly CHANGES_COUNT = 1;
 
     constructor(
@@ -47,7 +38,7 @@ export class AnnealingService {
 
     async generate(): Promise<Array<LocationItem>> {
         let start = Date.now();
-        console.log("\x1b[36m[algorithm]\x1b[0m generation has been started: ", (Date.now() - start), "ms");
+        console.log("\x1b[36m[Annealing]\x1b[0m generation has been started: ", (Date.now() - start), "ms");
         start = Date.now();
 
         this.keys.unshift({
@@ -56,11 +47,11 @@ export class AnnealingService {
         })
 
         await this.findPointsForPrompt();
-        console.log("\x1b[36m[algorithm]\x1b[0m points for prompt were found: ", (Date.now() - start), "ms");
+        console.log("\x1b[36m[Annealing]\x1b[0m points for prompt were found: ", (Date.now() - start), "ms");
         start = Date.now();
 
         const result = await this.annealing();
-        console.log("\x1b[36m[algorithm]\x1b[0m annealing finished: ", (Date.now() - start), "ms");
+        console.log("\x1b[36m[Annealing]\x1b[0m annealing finished: ", (Date.now() - start), "ms");
 
         const path: Array<LocationItem> = [];
         for (const locationItem of result)
@@ -88,16 +79,16 @@ export class AnnealingService {
         let prev_distance = Infinity;
         if (categoryIndex > 0) { // calculating distance to the prev point
             for (const house of this.items[categoryIndex - 1])
-                prev_distance = Math.min(prev_distance, getDistance(this.city, house.location.id, item.id));
+                prev_distance = Math.min(prev_distance, dijkstra(this.city, house.location.id, item.id).distance);
         } else { // calculating to the starting point
-            prev_distance = getDistance(this.city, this.startPosition.id, item.id);
+            prev_distance = dijkstra(this.city, this.startPosition.id, item.id).distance;
         }
 
         /** calculating distance to the next point if it exists **/
         let next_distance = Infinity;
         for (let next_index = categoryIndex + 1; next_index < this.items.length; next_index++) {
             if (this.keys[next_index].type !== 'fixed' || this.items[next_index].length === 0) continue;
-            next_distance = getDistance(this.city, this.items[next_index][0].location.id, item.id);
+            next_distance = dijkstra(this.city, this.items[next_index][0].location.id, item.id).distance;
             break;
         }
 
@@ -135,7 +126,7 @@ export class AnnealingService {
         // setting items for the `category` type
         for (let index = 0; index < this.keys.length; index++) {
             if (this.keys[index].type === 'category') {
-                console.log(`\x1b[36m[algorithm]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m start: `, (Date.now() - start), "ms"); // TODO remove after testing
+                console.log(`\x1b[36m[Annealing]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m start: `, (Date.now() - start), "ms"); // TODO remove after testing
                 start = Date.now(); // TODO remove after testing
 
                 // calculating places pre-similarities
@@ -149,7 +140,7 @@ export class AnnealingService {
                     });
                 }
 
-                console.log(`\x1b[36m[algorithm]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m calculated pre similarities: `, (Date.now() - start), "ms"); // TODO remove after testing
+                console.log(`\x1b[36m[Annealing]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m calculated pre similarities: `, (Date.now() - start), "ms"); // TODO remove after testing
                 start = Date.now(); // TODO remove after testing
 
                 // sorting places by their pre-similarity
@@ -172,7 +163,7 @@ export class AnnealingService {
                 if (this.items[index].length === 0)
                     throw new InternalServerError("sorted places are invalid");
 
-                console.log(`\x1b[36m[algorithm]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m finished: `, (Date.now() - start), "ms"); // TODO remove after testing
+                console.log(`\x1b[36m[Annealing]\x1b[0m \x1b[35m[findPointsForPrompt]\x1b[0m \x1b[34m[${ index } iteration]\x1b[0m finished: `, (Date.now() - start), "ms"); // TODO remove after testing
                 start = Date.now(); // TODO remove after testing
             }
         }

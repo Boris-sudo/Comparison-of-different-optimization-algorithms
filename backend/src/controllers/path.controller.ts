@@ -2,12 +2,15 @@ import * as koa from 'koa';
 import { Controller } from "@tsoa/runtime";
 import { OperationId, Post, Response, Route, Security, Tags, Request, Body } from "tsoa";
 
-import { PathCreateInterface, PathPostInterface, PathResponseInterface } from "../interfaces/path.interface";
+import {
+    PathCreateInterface,
+    PathPostInterface,
+    PathResponseInterface
+} from "../interfaces/path.interface";
+import { InternalServerError } from "../utils/errors";
 
 import * as CityService from '../services/city.service';
 import * as PathService from '../services/path.service';
-import { HouseInterface } from "../interfaces/house.interface";
-import { InternalServerError } from "../utils/errors";
 
 @Route('path')
 export class PathController extends Controller {

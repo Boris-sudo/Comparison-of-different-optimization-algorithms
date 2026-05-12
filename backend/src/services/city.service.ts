@@ -8,6 +8,7 @@ import { InternalServerError } from '../utils/errors';
 import { HouseInterface } from "../interfaces/house.interface";
 import { StreetInterface } from "../interfaces/street.interface";
 
+/** Adds `Map` for edges and vertical of the graph **/
 export const mapCity = async function (
     city: CityInterface,
 ): Promise<MappedCityInterface> {
@@ -28,9 +29,7 @@ export const mapCity = async function (
     return res;
 }
 
-/**
- * @param {number} count - count of houses
- **/
+/** Creates random city, may use count of the verticals **/
 export const createRandomCity = async function (
     count?: number
 ): Promise<MappedCityInterface> {
@@ -56,9 +55,7 @@ export const createRandomCity = async function (
     return generateCityByCategories(categories);
 }
 
-/**
- * @param {Record<number, number>} categories - count of houses by category
- **/
+/** Creates random city by `Record` of the category -> count **/
 const generateCityByCategories = async function (
     categories: Record<number, number>
 ): Promise<MappedCityInterface> {
@@ -100,45 +97,3 @@ const generateCityByCategories = async function (
 
     return city;
 }
-
-export const getDistance = function (
-    city: MappedCityInterface,
-    fromId: string,
-    toId: string
-): number {
-    if (fromId === toId) return 0;
-
-    const dist = new Map<string, number>();
-    const visited = new Set<string>();
-
-    dist.set(fromId, 0);
-
-    while (true) {
-        // находим непосещённую вершину с минимальным расстоянием
-        let curId: string | null = null;
-        let curDist = Infinity;
-
-        for (const [id, d] of dist) {
-            if (!visited.has(id) && d < curDist) {
-                curDist = d;
-                curId = id;
-            }
-        }
-
-        if (curId === null) return -1;
-        if (curId === toId) return curDist;
-
-        visited.add(curId);
-
-        const house = city.houseIndex.get(curId);
-        if (!house) continue;
-
-        for (const edge of house.edges) {
-            if (visited.has(edge.to)) continue;
-            const newDist = curDist + edge.length;
-            if (newDist < (dist.get(edge.to) ?? Infinity)) {
-                dist.set(edge.to, newDist);
-            }
-        }
-    }
-};

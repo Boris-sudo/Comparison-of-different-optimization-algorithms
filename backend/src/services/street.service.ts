@@ -4,12 +4,14 @@ import { HouseInterface } from "../interfaces/house.interface";
 import { InternalServerError } from "../utils/errors";
 import { getRandomInt, randomChoice, Queue, RandomQueue } from "../utils/utils";
 
+/** Parses steer id to two house ids **/
 const parseStreetId = (id: string): { from: string; to: string } => {
     const [from, to] = id.split(':');
     if (!from || !to) throw new InternalServerError(`Invalid street id format: ${ id }`);
     return { from, to };
 };
 
+/** Changes street in city **/
 export const changeStreet = async function (
     city: MappedCityInterface,
     street: StreetChangeInterface
@@ -66,6 +68,7 @@ export const changeStreet = async function (
     }
 };
 
+/** Removes edge from Array **/
 const removeFromEdges = (
     edges: Array<StreetInterface>,
     target: StreetInterface
@@ -76,6 +79,7 @@ const removeFromEdges = (
     edges.pop();
 };
 
+/** Adds two-sided edges between to and from houses **/
 export const addEdge = (
     to: HouseInterface,
     from: HouseInterface,
@@ -106,11 +110,7 @@ export const addEdge = (
     streetIndex.set(reverseId, reverseStreet);
 }
 
-/**
- * @param {Array<HouseInterface>} houses
- * @param {Map<string, StreetInterface>} streetIndex
- * @param {number} depth - насколько плотный должен быть город
- **/
+/** Creates random edges in city that it will be one connected graph **/
 export const createRandomEdges = function (
     houses: Array<HouseInterface>,
     streetIndex: Map<string, StreetInterface>,

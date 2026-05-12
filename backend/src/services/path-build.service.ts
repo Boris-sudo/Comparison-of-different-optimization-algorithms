@@ -1,7 +1,8 @@
 import { MappedCityInterface } from "../interfaces/city.interface";
 import { PathResponseInterface } from "../interfaces/path.interface";
 
-function dijkstra(
+/** Dijkstra algorithm for fast search of path between two points **/
+export function dijkstra(
     city: MappedCityInterface,
     fromId: string,
     toId: string,
@@ -12,7 +13,7 @@ function dijkstra(
     const unvisited = new Set<string>();
 
     for (const house of city.houses) {
-        if (forbidden.has(house.id) && house.id !== fromId && house.id !== toId) continue; // пропускаем запрещённые
+        if (forbidden.has(house.id) && house.id !== fromId && house.id !== toId) continue;
         dist.set(house.id, Infinity);
         prev.set(house.id, null);
     }
@@ -59,12 +60,17 @@ function dijkstra(
     };
 }
 
+/** Function for building route in city with certain verticals in `waypoints` **/
 export function buildRouteInOrder(
     city: MappedCityInterface,
     waypoints: string[],
     ignoreSimilarities: boolean = false
 ): PathResponseInterface {
-    const fullPath: PathResponseInterface = { points: [], length: 0 };
+    const fullPath: PathResponseInterface = {
+        points: [],
+        length: 0,
+        duration: { network: 0, algo: 0, }
+    };
     const visited = new Set<string>();
 
     for (const waypoint of waypoints) {
