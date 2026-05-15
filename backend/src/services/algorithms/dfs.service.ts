@@ -4,28 +4,29 @@ import { HouseInterface } from "../../interfaces/house.interface";
 import { InternalServerError } from "../../utils/errors";
 import { StreetInterface } from "../../interfaces/street.interface";
 import { getCategory } from "../category.service";
-import { getAllDistancesMatrix } from "../path-build.service";
+import { DynamicAPSP } from "../path-build.service";
 
 export class DfsService {
     private city: MappedCityInterface;
     private keys: PromptElement[];
     private startPosition: HouseInterface;
 
+    private apsp: DynamicAPSP;
+
     private items: LocationItem[][];
     private graph: MappedCityInterface;
     private result: LocationItem[];
     private durations: Map<string, number>;
 
-    private distances: Map<string, Map<string, number>>;
-
     private readonly MAX_ITEMS_COUNT = 29;
 
     constructor(
-        city: MappedCityInterface,
+        apsp: DynamicAPSP,
         keys: PromptElement[],
         startPosition: HouseInterface
     ) {
-        this.city = city;
+        this.apsp = apsp;
+        this.city = apsp.city;
         this.keys = keys;
         this.startPosition = startPosition;
         this.items = [];
@@ -37,7 +38,6 @@ export class DfsService {
         }
         this.result = [];
         this.durations = new Map<string, number>();
-        this.distances = new Map<string, Map<string, number>>();
     }
 
     /**
@@ -54,10 +54,6 @@ export class DfsService {
         console.log("\x1b[36m[DFS]\x1b[0m generation has been started: ", (Date.now() - start), "ms");
         start = Date.now();
 
-        this.distances = getAllDistancesMatrix(this.city);
-        console.log("\x1b[36m[DFS]\x1b[0m distances matrix was calculated: ", (Date.now() - start), "ms");
-        start = Date.now();
-
         this.findPoints();
         console.log("\x1b[36m[DFS]\x1b[0m points for prompt were found: ", (Date.now() - start), "ms");
         start = Date.now();
@@ -72,6 +68,10 @@ export class DfsService {
 
         this.dfs(0, 0);
         console.log("\x1b[36m[DFS]\x1b[0m algorithm finished: ", (Date.now() - start), "ms");
+
+        for (let i = 0; i < this.result.length; i++) {
+            this.result[i].location = this.city.houseIndex.get(this.getId(this.result[i].location.id))!;
+        }
 
         return this.result;
     }
@@ -95,7 +95,7 @@ export class DfsService {
     /** Finds points for new each key **/
     private findPoints() {
         // setting default value of `items` array
-        this.items = [[{ location: { ...this.startPosition, edges: [] } }]];
+        this.items = [[{ location: { ...this.startPosition, edges: [], id: `0-${this.startPosition.id}` } }]];
         for (let index = 0; index < this.keys.length; index++)
             this.items.push([]);
 
@@ -105,7 +105,7 @@ export class DfsService {
                 const house = this.city.houseIndex.get(this.keys[index].id!);
                 if (house === undefined) throw new InternalServerError(`house ${ index } not found`);
                 this.items[index + 1].push({
-                    location: { ...house, edges: [] }
+                    location: { ...house, edges: [], id: `${index + 1}-${house.id}` }
                 });
             }
         }
@@ -129,7 +129,7 @@ export class DfsService {
                 // getting top places
                 for (const place of sort_places)
                     this.items[index + 1].push({
-                        location: { ...place.house, edges: [] },
+                        location: { ...place.house, edges: [], id: `${index + 1}-${place.house.id}` },
                     });
             }
         }
@@ -145,7 +145,7 @@ export class DfsService {
                             id: `${ from.location.id }:${ to.location.id }`,
                             from: from.location.id,
                             to: to.location.id,
-                            length: this.distances.get(from.location.id)?.get(to.location.id) ?? Infinity
+                            length: this.apsp.getDistance(from.location.id, to.location.id),
                         };
                         from.location.edges.push(street);
                         this.graph.streetIndex.set(street.id, street);
@@ -161,6 +161,10 @@ export class DfsService {
         }
     }
 
+    private getId(id: string) {
+        return id.split('-').slice(1).join('-');
+    }
+
     /** Builds optimized path in new graph **/
     private dfs(index: number, duration: number) {
         if (index === this.items.length - 1) return;
@@ -170,7 +174,7 @@ export class DfsService {
         for (const edge of house.edges) {
             if (this.durations.get(edge.to)! > duration + edge.length) {
                 this.durations.set(edge.to, duration + edge.length);
-                const to_house = this.city.houseIndex.get(edge.to);
+                const to_house = this.graph.houseIndex.get(edge.to);
                 if (to_house === undefined) throw new InternalServerError(`house ${ index } not found`);
                 this.result[index + 1] = { location: to_house };
                 this.dfs(index + 1, duration + edge.length);

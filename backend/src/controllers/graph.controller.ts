@@ -3,7 +3,7 @@ import { Controller } from "@tsoa/runtime";
 import { Body, OperationId, Post, Request, Response, Route, Security, Tags } from "tsoa";
 import { redis } from "../server";
 
-import { CityModelInterface } from "../interfaces/city.interface";
+import { CityInterface, CityModelInterface } from "../interfaces/city.interface";
 import { StreetChangeInterface } from "../interfaces/street.interface";
 import { HouseChangeInterface } from "../interfaces/house.interface";
 import { UserResponse } from "../interfaces/user.interface";
@@ -12,6 +12,7 @@ import { getToken } from "../utils/utils";
 import * as CityService from "../services/city.service";
 import * as StreetService from "../services/street.service";
 import * as HouseService from "../services/house.service";
+import { DynamicAPSP } from "../services/path-build.service";
 
 
 @Route('city')
@@ -25,18 +26,12 @@ export class GraphController extends Controller {
         @Request() request: koa.Request,
     ): Promise<UserResponse> {
         const token = getToken(request);
-        const myContext = request.ctx.myContext;
-        const user: UserResponse = myContext;
-        const new_city_model = await CityService.createRandomCity();
+        const new_city_apsp = await CityService.createRandomCity();
 
-        user.city = {
-            id: new_city_model.id,
-            houses: new_city_model.houses,
-        };
+        const redisCity = CityService.createRedisInterface(new_city_apsp);
+        await redis.set(token, redisCity);
 
-        await redis.set(token, JSON.stringify(user));
-
-        return myContext;
+        return { city: CityService.createCityInterface(new_city_apsp) };
     }
 
     @Post("createRandomGraphByModel")
@@ -49,18 +44,12 @@ export class GraphController extends Controller {
         @Body() dto: CityModelInterface,
     ): Promise<UserResponse> {
         const token = getToken(request);
-        const myContext = request.ctx.myContext;
-        const user = myContext;
-        const new_city_model = await CityService.createRandomCity(dto.count);
+        const new_city_apsp = await CityService.createRandomCity(dto.count);
 
-        user.city = {
-            id: new_city_model.id,
-            houses: new_city_model.houses,
-        };
+        const redisCity = CityService.createRedisInterface(new_city_apsp);
+        await redis.set(token, redisCity);
 
-        await redis.set(token, JSON.stringify(user));
-
-        return user;
+        return { city: CityService.createCityInterface(new_city_apsp) };
     }
 
     @Post("changeStreet")
@@ -73,13 +62,15 @@ export class GraphController extends Controller {
         @Body() dto: StreetChangeInterface,
     ): Promise<UserResponse> {
         const token = getToken(request);
-        const user = request.ctx.myContext;
-        const city = await CityService.mapCity(user.city);
-        await StreetService.changeStreet(city, dto);
+        const old_city = request.ctx.myContext;
+        const apsp = await CityService.mapCity(old_city);
 
-        await redis.set(token, JSON.stringify(user));
+        await StreetService.changeStreet(apsp, dto);
 
-        return user;
+        const redisCity = CityService.createRedisInterface(apsp);
+        await redis.set(token, redisCity);
+
+        return { city: CityService.createCityInterface(apsp) };
     }
 
     @Post("changeHouse")
@@ -92,12 +83,14 @@ export class GraphController extends Controller {
         @Body() dto: HouseChangeInterface,
     ): Promise<UserResponse> {
         const token = getToken(request);
-        const user = request.ctx.myContext;
-        const city = await CityService.mapCity(user.city);
-        await HouseService.changeHouse(city, dto);
+        const old_city = request.ctx.myContext;
+        const apsp = await CityService.mapCity(old_city);
 
-        await redis.set(token, JSON.stringify(user));
+        await HouseService.changeHouse(apsp, dto);
 
-        return user;
+        const redisCity = CityService.createRedisInterface(apsp);
+        await redis.set(token, redisCity);
+
+        return { city: CityService.createCityInterface(apsp) };
     }
 }

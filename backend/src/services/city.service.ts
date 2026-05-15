@@ -1,18 +1,41 @@
 import { v4 as uuidv4 } from 'uuid';
 import { getRandomInt } from "../utils/utils";
 
-import { CityInterface, MappedCityInterface } from "../interfaces/city.interface";
+import { CityInterface, MappedCityInterface, RedisCityInterface } from "../interfaces/city.interface";
 import { InternalServerError } from '../utils/errors';
 import { HouseInterface } from "../interfaces/house.interface";
 import { StreetInterface } from "../interfaces/street.interface";
 
 import * as CategoryService from './category.service';
 import * as StreetService from './street.service';
+import { DynamicAPSP } from "./path-build.service";
+
+export const createCityInterface = function (
+    apsp: DynamicAPSP,
+): CityInterface {
+    return { id: apsp.city.id, houses: apsp.city.houses };
+}
+
+export const createRedisInterface = function (
+    apsp: DynamicAPSP,
+): RedisCityInterface {
+    let result: RedisCityInterface = {
+        id: apsp.city.id,
+        houses: apsp.city.houses,
+        distances: []
+    }
+
+    for (const [from_id, distances] of apsp.dist)
+        for (const [to_id, distance] of distances)
+            result.distances.push([from_id, to_id, distance.toString()]);
+
+    return result;
+}
 
 /** Adds `Map` for edges and vertical of the graph **/
 export const mapCity = async function (
-    city: CityInterface,
-): Promise<MappedCityInterface> {
+    city: RedisCityInterface,
+): Promise<DynamicAPSP> {
     let res: MappedCityInterface = {
         id: city.id,
         houses: city.houses,
@@ -27,13 +50,13 @@ export const mapCity = async function (
         }
     }
 
-    return res;
+    return new DynamicAPSP(res, city.distances);
 }
 
 /** Creates random city, may use count of the verticals **/
 export const createRandomCity = async function (
     count?: number
-): Promise<MappedCityInterface> {
+): Promise<DynamicAPSP> {
     const categories_count = CategoryService.categoriesCount();
     let categories: Record<number, number> = {};
     for (let i = 0; i < categories_count; i++)
@@ -42,7 +65,8 @@ export const createRandomCity = async function (
     if (count === undefined) {
         for (let index = 0; index < categories_count; index++)
             categories[index] = (index == 0 ? 1 : getRandomInt(1, 3));
-    } else {
+    }
+    else {
         while (count > 0)
             for (let index = 0; index < categories_count; index++) {
                 const cnt = Math.min(count, (index == 0 ? 1 : getRandomInt(1, 3)));
@@ -59,7 +83,7 @@ export const createRandomCity = async function (
 /** Creates random city by `Record` of the category -> count **/
 const generateCityByCategories = async function (
     categories: Record<number, number>
-): Promise<MappedCityInterface> {
+): Promise<DynamicAPSP> {
     let city: MappedCityInterface = {
         id: uuidv4(),
         houses: [],
@@ -95,5 +119,5 @@ const generateCityByCategories = async function (
 
     StreetService.createRandomEdges(city.houses, city.streetIndex);
 
-    return city;
+    return new DynamicAPSP(city);
 }

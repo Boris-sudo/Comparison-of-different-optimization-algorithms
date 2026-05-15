@@ -10,9 +10,11 @@ import {
 import { MappedCityInterface } from "../interfaces/city.interface";
 import { AnnealingService } from "./algorithms/annealing.service";
 import { DfsService } from "./algorithms/dfs.service";
-import { buildRouteInOrder } from "./path-build.service";
+import { buildRouteInOrder, DynamicAPSP } from "./path-build.service";
 
 import * as CategoryService from './category.service';
+import { AStarService } from "./algorithms/a_star.service";
+import { BfsService } from "./algorithms/bfs.service";
 
 const openai = new OpenAI({
     apiKey: config.OpenAiApiKey,
@@ -136,10 +138,10 @@ const parsePrompt = async function (
     let parsed: PromptElement[] = [];
 
     // todo remove after testing
-    return [
-        { type: 'category', raw_prompt: 'парк', categories: { 'парк': 95 } },
-        { type: 'category', raw_prompt: 'кафе', categories: { 'кафе': 95 } }
-    ];
+    // return [
+    //     { type: 'category', raw_prompt: 'парк', categories: { 'парк': 95 } },
+    //     { type: 'category', raw_prompt: 'кафе', categories: { 'кафе': 95 } }
+    // ];
 
     while (parsed.length === 0) {
         try {
@@ -176,7 +178,7 @@ const parsePrompt = async function (
 
 /** Creates path in city by user prompt **/
 export const createPath = async function (
-    city: MappedCityInterface,
+    apsp: DynamicAPSP,
     path: PathCreateInterface
 ): Promise<PathResponseInterface> {
     const start_time = Date.now();
@@ -188,20 +190,24 @@ export const createPath = async function (
     let pathResponse: Array<LocationItem> = [];
     switch (path.model) {
         case "Annealing": {
-            const model = new AnnealingService(city, points, path.startPoint);
+            const model = new AnnealingService(apsp, points, path.startPoint);
             pathResponse = await model.generate();
             break;
         }
         case "Dfs": {
-            const model = new DfsService(city, points, path.startPoint);
+            const model = new DfsService(apsp, points, path.startPoint);
             pathResponse = await model.generate();
             break;
         }
         case "Bfs": {
-            throw new Error("BFS algorithm not implemented yet");
+            const model = new BfsService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
         }
         case "A*": {
-            throw new Error("A* algorithm not implemented yet");
+            const model = new AStarService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
         }
         case "ACO": {
             throw new Error("ACO algorithm not implemented yet");
@@ -218,7 +224,7 @@ export const createPath = async function (
 
     duration_result.algo = Date.now() - start_time - duration_result.network;
 
-    const result = buildRouteInOrder(city, points_ids);
+    const result = buildRouteInOrder(apsp.city, points_ids);
 
     return { ...result, duration: duration_result } as PathResponseInterface;
 }

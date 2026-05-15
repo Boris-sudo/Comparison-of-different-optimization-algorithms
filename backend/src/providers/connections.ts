@@ -1,5 +1,6 @@
 import { Redis } from "ioredis";
 import { config } from '../config'
+import { RedisCityInterface } from "../interfaces/city.interface";
 
 /**
  * Class that works with redis
@@ -12,12 +13,19 @@ export class RedisConfiguration {
         port: config.redis.port
     });
 
-    public async set(key: string, value: string, ttl: number = config.redis.ttl) {
-        await this.client.set(key, value, 'EX', ttl);
+    public async set(key: string, value: RedisCityInterface, ttl: number = config.redis.ttl) {
+        await this.client.set(key, JSON.stringify(value), 'EX', ttl);
     }
 
-    public async get(key: string): Promise<string | null> {
-        return this.client.get(key);
+    public async get(key: string): Promise<RedisCityInterface | null> {
+        const resp = await this.client.get(key);
+        if (resp === null) return null;
+        try {
+            return JSON.parse(resp);
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
     }
 
     public getRedisClient() {

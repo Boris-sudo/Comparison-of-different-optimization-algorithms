@@ -2,7 +2,6 @@ import * as koa from "koa";
 import * as errors from "../utils/errors"
 import { redis } from "../server";
 import { getToken } from "../utils/utils";
-import { UserResponse } from "../interfaces/user.interface";
 
 
 export async function koaAuthentication(request: koa.Request, securityName: string, scopes?: string[]): Promise<any> {
@@ -14,7 +13,7 @@ export async function koaAuthentication(request: koa.Request, securityName: stri
 
         if (session) {
             // ctx.header.auth = '';
-            ctx.myContext = JSON.parse(session) as UserResponse;
+            ctx.myContext = session;
             return;
         }
     }

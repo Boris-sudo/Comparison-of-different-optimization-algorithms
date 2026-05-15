@@ -5,7 +5,13 @@ export interface MappedCityInterface {
     id: string;
     houses: Array<HouseInterface>;
     houseIndex: Map<string, HouseInterface>;
-    streetIndex: Map<string, StreetInterface>
+    streetIndex: Map<string, StreetInterface>;
+}
+
+export interface RedisCityInterface {
+    id: string;
+    houses: Array<HouseInterface>;
+    distances: string[][];
 }
 
 export interface CityInterface {

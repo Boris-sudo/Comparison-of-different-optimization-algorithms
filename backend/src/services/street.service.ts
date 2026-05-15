@@ -3,6 +3,7 @@ import { StreetChangeInterface, StreetInterface } from "../interfaces/street.int
 import { HouseInterface } from "../interfaces/house.interface";
 import { InternalServerError } from "../utils/errors";
 import { getRandomInt, randomChoice, Queue, RandomQueue } from "../utils/utils";
+import { DynamicAPSP } from "./path-build.service";
 
 /** Parses steer id to two house ids **/
 const parseStreetId = (id: string): { from: string; to: string } => {
@@ -13,9 +14,11 @@ const parseStreetId = (id: string): { from: string; to: string } => {
 
 /** Changes street in city **/
 export const changeStreet = async function (
-    city: MappedCityInterface,
+    apsp: DynamicAPSP,
     street: StreetChangeInterface
 ): Promise<void> {
+    const city = apsp.city;
+
     switch (street.action) {
         case "change": {
             const existing = city.streetIndex.get(street.id);
@@ -23,8 +26,13 @@ export const changeStreet = async function (
             if (!existing || !rev)
                 throw new InternalServerError(`Street ${ street.id } not found`);
 
+            apsp.onEdgeRemoved(existing.from, existing.to, existing.length);
+
             existing.length = street.length;
             rev.length = street.length;
+
+            apsp.onEdgeAdded(existing.from, existing.to, existing.length);
+
             break;
         }
 
@@ -39,6 +47,8 @@ export const changeStreet = async function (
             if (!toHouse) throw new InternalServerError(`House ${ to } not found`);
 
             addEdge(fromHouse, toHouse, city.streetIndex);
+
+            apsp.onEdgeAdded(from, to, city.streetIndex.get(street.id)!.length);
 
             break;
         }
@@ -56,10 +66,13 @@ export const changeStreet = async function (
             if (!fromHouse) throw new InternalServerError(`House ${ existing.from } not found`);
             if (!toHouse) throw new InternalServerError(`House ${ existing.to } not found`);
 
+            apsp.onEdgeRemoved(existing.from, existing.to, existing.length);
+
             removeFromEdges(toHouse.edges, reverse);
             city.streetIndex.delete(reverseId);
             removeFromEdges(fromHouse.edges, existing);
             city.streetIndex.delete(street.id);
+
             break;
         }
 

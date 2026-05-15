@@ -18,7 +18,6 @@ export class ProfileApiService {
     ) {}
 
     async register(): Promise<void> {
-        console.log('registration')
         const tokenJson = await firstValueFrom(this.apiService.api.register());
         const token = tokenJson.token.replace('Bearer: ', '');
         this.jwtService.saveToken(token);
@@ -39,11 +38,6 @@ export class ProfileApiService {
             this.purgeAuth();
             return null;
         }
-    }
-
-    async regenerateCity(): Promise<void> {
-        const resp = await firstValueFrom(this.apiService.api.generateRandomCity());
-        this.currentUser.set(resp);
     }
 
     purgeAuth() {

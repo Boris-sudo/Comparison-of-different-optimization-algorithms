@@ -1,9 +1,9 @@
 import 'koa';
 import { UserResponse } from "../interfaces/user.interface";
-import { MappedCityInterface } from "../interfaces/city.interface";
+import { RedisCityInterface } from "../interfaces/city.interface";
 
 declare module 'koa' {
     interface ExtendableContext {
-        myContext: UserResponse;
+        myContext: RedisCityInterface;
     }
 }

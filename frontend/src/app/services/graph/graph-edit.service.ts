@@ -187,15 +187,14 @@ export class GraphEditService {
         const street = this.state.selectedStreet();
         if (!street) return;
         const id = street.id;
+        const revId = street.id.split(':').reverse().join(':');
 
-        this.state.streets = this.state.streets.filter(s => s.id !== id);
+        this.state.streets = this.state.streets.filter(s => s.id !== id && s.id !== revId);
         this.state.streetSet.delete(id);
-        console.log(id);
-        console.log(this.state.d3Links[0].id);
+        this.state.streetSet.delete(revId);
         this.state.d3Links = this.state.d3Links.filter(l => {
-            return l.id !== id && l.id.split(':').reverse().join(':') != id;
+            return l.id !== id && l.id !== revId;
         });
-        console.log(this.state.d3Links);
         this.state.selectedStreet.set(null);
 
         this.render.syncLinks();

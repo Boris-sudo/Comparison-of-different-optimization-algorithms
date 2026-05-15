@@ -1,5 +1,6 @@
 import { MappedCityInterface } from "../interfaces/city.interface";
 import { PathResponseInterface } from "../interfaces/path.interface";
+import { HouseInterface } from "../interfaces/house.interface";
 
 /** Dijkstra algorithm for fast search of path between two points **/
 export function dijkstra(
@@ -115,44 +116,177 @@ export function buildRouteInOrder(
     return fullPath;
 }
 
-export function getAllDistancesMatrix(
-    city: MappedCityInterface,
-): Map<string, Map<string, number>> {
-    const result = new Map<string, Map<string, number>>();
+export class DynamicAPSP {
+    dist: Map<string, Map<string, number>> = new Map();
+    city: MappedCityInterface;
 
-    for (const house of city.houses) {
-        const map = new Map<string, number>();
-        for (const house1 of city.houses) {
-            map.set(house1.id, Infinity);
-            if (house1.id === house.id)
-                map.set(house1.id, 0);
-        }
-        result.set(house.id, map);
+    constructor(
+        city: MappedCityInterface,
+        distances: string[][] | undefined = undefined
+    ) {
+        this.city = city;
+        if (distances)
+            this.buildFromDistances(distances);
+        else
+            this.rebuild();
     }
 
-    for (const house of city.houses) {
-        for (const edge of house.edges) {
-            result.get(edge.from)?.set(edge.to, edge.length);
+    // ─── Полная перестройка O(V * (E + V) log V) ─────────────────────────────
+
+    rebuild() {
+        this.dist.clear();
+        for (const house of this.city.houses) {
+            this.dist.set(house.id, this.dijkstra(house.id));
         }
     }
 
-    const n = city.houses.length;
-    for (let k = 0; k < n; k++)
-        for (let i = 0; i < n; i++)
-            for (let j = 0; j < n; j++) {
-                if (k === i || k === j || i == j) continue;
-                const a = city.houses[k].id;
-                const b = city.houses[i].id;
-                const c = city.houses[j].id;
+    buildFromDistances(distances: string[][]) {
+        for (const [from, to, distance_str] of distances) {
+            const distance = Number(distance_str);
+            if (this.dist.get(from) === undefined)
+                this.dist.set(from, new Map());
+            this.dist.get(from)?.set(to, distance);
+        }
+    }
 
-                const d_ba = result.get(b)?.get(a) ?? Infinity;
-                const d_ac = result.get(a)?.get(c) ?? Infinity;
+    // ─── Запрос O(1) ──────────────────────────────────────────────────────────
 
-                if (d_ba === Infinity || d_ac === Infinity) continue;
+    getDistance(fromId: string, toId: string): number {
+        return this.dist.get(fromId)?.get(toId) ?? Infinity;
+    }
 
-                const d_bc = result.get(b)?.get(c) ?? Infinity;
-                result.get(b)?.set(c, Math.min(d_bc, d_ba + d_ac));
+    // ─── Добавление ребра O(V log V) ─────────────────────────────────────────
+    // При добавлении ребра (u, v, w) расстояния могут только уменьшиться.
+    // Достаточно проверить для каждой пары (s, t):
+    // dist[s][t] = min(dist[s][t], dist[s][u] + w + dist[v][t])
+
+    onEdgeAdded(fromId: string, toId: string, weight: number) {
+        const nodes = this.city.houses.map(h => h.id);
+
+        for (const s of nodes) {
+            const distS = this.dist.get(s)!;
+            for (const t of nodes) {
+                // Через u→v
+                const via_uv =
+                    (distS.get(fromId) ?? Infinity) + weight +
+                    (this.dist.get(toId)?.get(t) ?? Infinity);
+                if (via_uv < (distS.get(t) ?? Infinity)) {
+                    distS.set(t, via_uv);
+                }
+
+                // Через v→u (граф неориентированный)
+                const via_vu =
+                    (distS.get(toId) ?? Infinity) + weight +
+                    (this.dist.get(fromId)?.get(t) ?? Infinity);
+                if (via_vu < (distS.get(t) ?? Infinity)) {
+                    distS.set(t, via_vu);
+                }
             }
+        }
+    }
 
-    return result;
+    // ─── Удаление ребра O(V * (E + V) log V) в худшем случае ─────────────────
+    // При удалении расстояния могут только вырасти.
+    // Нужно найти все пары (s, t) где кратчайший путь проходил через это ребро
+    // и пересчитать их.
+
+    onEdgeRemoved(fromId: string, toId: string, weight: number) {
+        const nodes = this.city.houses.map(h => h.id);
+        const affected = new Set<string>();
+
+        for (const s of nodes) {
+            const distS = this.dist.get(s)!;
+            for (const t of nodes) {
+                const d = distS.get(t) ?? Infinity;
+
+                // Проверяем оба направления ребра
+                const through_uv =
+                    (distS.get(fromId) ?? Infinity) + weight +
+                    (this.dist.get(toId)?.get(t) ?? Infinity);
+
+                const through_vu =
+                    (distS.get(toId) ?? Infinity) + weight +
+                    (this.dist.get(fromId)?.get(t) ?? Infinity);
+
+                if (d === through_uv || d === through_vu) {
+                    affected.add(s);
+                    break; // нашли хотя бы одну затронутую пару — достаточно
+                }
+            }
+        }
+
+        // Пересчитываем затронутые источники
+        for (const s of affected) {
+            this.dist.set(s, this.dijkstra(s));
+        }
+
+        // Синхронизируем обратные расстояния — граф симметричный
+        // поэтому dist[s][t] === dist[t][s], копируем из пересчитанных
+        for (const s of nodes) {
+            if (affected.has(s)) continue;
+            const distS = this.dist.get(s)!;
+            for (const t of affected) {
+                // dist[t][s] уже пересчитан, берём оттуда
+                const newDist = this.dist.get(t)?.get(s) ?? Infinity;
+                distS.set(t, newDist);
+            }
+        }
+    }
+
+    // ─── Добавление вершины O(V log V) ───────────────────────────────────────
+
+    onNodeAdded(nodeId: string) {
+        // Новая вершина изолирована — расстояния до всех Infinity кроме себя
+        const newDist = new Map<string, number>();
+        for (const house of this.city.houses) {
+            newDist.set(house.id, Infinity);
+            this.dist.get(house.id)?.set(nodeId, Infinity);
+        }
+        newDist.set(nodeId, 0);
+        this.dist.set(nodeId, newDist);
+    }
+
+    // ─── Удаление вершины O(V) ────────────────────────────────────────────────
+
+    onNodeRemoved(nodeId: string) {
+        this.dist.delete(nodeId);
+        for (const distMap of this.dist.values()) {
+            distMap.delete(nodeId);
+        }
+    }
+
+    // ─── Dijkstra O((E + V) log V) ────────────────────────────────────────────
+
+    private dijkstra(sourceId: string): Map<string, number> {
+        const dist = new Map<string, number>();
+        for (const house of this.city.houses) {
+            dist.set(house.id, Infinity);
+        }
+        dist.set(sourceId, 0);
+
+        // Min-heap через простой массив с сортировкой
+        // Для продакшена замени на настоящую priority queue
+        const pq: { id: string; d: number }[] = [{ id: sourceId, d: 0 }];
+
+        while (pq.length > 0) {
+            pq.sort((a, b) => a.d - b.d);
+            const { id: u, d: du } = pq.shift()!;
+
+            if (du > (dist.get(u) ?? Infinity)) continue;
+
+            const house = this.city.houseIndex.get(u);
+            if (!house) continue;
+
+            for (const street of house.edges) {
+                const v = street.from === u ? street.to : street.from;
+                const newDist = du + street.length;
+                if (newDist < (dist.get(v) ?? Infinity)) {
+                    dist.set(v, newDist);
+                    pq.push({ id: v, d: newDist });
+                }
+            }
+        }
+
+        return dist;
+    }
 }

@@ -4,13 +4,15 @@ import { HouseInterface } from "../../interfaces/house.interface";
 import { InternalServerError } from "../../utils/errors";
 import { getRandomInt } from "../../utils/utils";
 import { getCategory } from "../category.service";
-import { buildRouteInOrder, dijkstra } from "../path-build.service";
+import { DynamicAPSP } from "../path-build.service";
 
 export class AnnealingService {
     /* parsed elements of the prompt */
     keys: PromptElement[];
     /* city */
     city: MappedCityInterface;
+    /* apsp */
+    apsp: DynamicAPSP;
 
     items: Array<Array<LocationItem>>;
 
@@ -26,11 +28,12 @@ export class AnnealingService {
     private readonly CHANGES_COUNT = 1;
 
     constructor(
-        city: MappedCityInterface,
+        apsp: DynamicAPSP,
         keys: PromptElement[],
         startPosition: HouseInterface
     ) {
-        this.city = city;
+        this.apsp = apsp;
+        this.city = apsp.city;
         this.keys = keys;
         this.startPosition = startPosition;
         this.items = [];
@@ -79,16 +82,16 @@ export class AnnealingService {
         let prev_distance = Infinity;
         if (categoryIndex > 0) { // calculating distance to the prev point
             for (const house of this.items[categoryIndex - 1])
-                prev_distance = Math.min(prev_distance, dijkstra(this.city, house.location.id, item.id).distance);
+                prev_distance = Math.min(prev_distance, this.apsp.getDistance(house.location.id, item.id));
         } else { // calculating to the starting point
-            prev_distance = dijkstra(this.city, this.startPosition.id, item.id).distance;
+            prev_distance = this.apsp.getDistance(this.startPosition.id, item.id);
         }
 
         /** calculating distance to the next point if it exists **/
         let next_distance = Infinity;
         for (let next_index = categoryIndex + 1; next_index < this.items.length; next_index++) {
             if (this.keys[next_index].type !== 'fixed' || this.items[next_index].length === 0) continue;
-            next_distance = dijkstra(this.city, this.items[next_index][0].location.id, item.id).distance;
+            next_distance = this.apsp.getDistance(this.items[next_index][0].location.id, item.id);
             break;
         }
 
@@ -231,7 +234,10 @@ export class AnnealingService {
 
         const waypoints: string[] = [];
         for (const item of items) waypoints.push(item.location.id);
-        const distance_indicator = Math.max(10, buildRouteInOrder(this.city, waypoints, true).length);
+        let distance_indicator = 0;
+        for (let i = 1; i < waypoints.length; i++)
+            distance_indicator += this.apsp.getDistance(waypoints[i - 1], waypoints[i]);
+        distance_indicator = Math.max(10, distance_indicator);
         if (distance_indicator === 0)
             throw (new InternalServerError("distance indicator is 0"));
 

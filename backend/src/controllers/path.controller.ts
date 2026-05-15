@@ -23,18 +23,17 @@ export class PathController extends Controller {
         @Request() request: koa.Request,
         @Body() dto: PathPostInterface,
     ): Promise<PathResponseInterface> {
-        const user = request.ctx.myContext;
-        const city = await CityService.mapCity(user.city);
-        const start = city.houseIndex.get(dto.startPoint);
-
+        const apsp = await CityService.mapCity(request.ctx.myContext);
+        const start = apsp.city.houseIndex.get(dto.startPoint);
         if (!start) throw new InternalServerError(`house with id ${dto.startPoint} not found`);
+
         const prompt: PathCreateInterface = {
             prompt: dto.prompt,
             model: dto.model,
             startPoint: start
         }
 
-        const path = await PathService.createPath(city, prompt);
+        const path = await PathService.createPath(apsp, prompt);
 
         return path;
     }

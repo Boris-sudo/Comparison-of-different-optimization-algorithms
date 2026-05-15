@@ -104,6 +104,23 @@ export class GraphRenderService {
             .on('end', () => this.fitGraph());
     }
 
+    focusOn(x: number, y: number, scale = 1.8) {
+        if (!this.svg || !this.zoomBehavior) return;
+
+        const tx = this.width  / 2 - x * scale;
+        const ty = this.height / 2 - y * scale;
+
+        const transform = d3.zoomIdentity.translate(tx, ty).scale(scale);
+
+        this.svg.transition()
+            .duration(500)
+            .call(this.zoomBehavior.transform, transform);
+
+        this.g.transition()
+            .duration(500)
+            .attr('transform', transform.toString());
+    }
+
     // ─── Render ───────────────────────────────────────────────────────────────
 
     renderGraph() {

@@ -35,6 +35,9 @@ export class GraphStateService {
     d3Nodes: D3Node[] = [];
     d3Links: D3Link[] = [];
 
+    // ─── Graph signals ───────────────────────────────────────────────────────────
+    reloadGraph = signal<boolean>(false);
+
     // ─── Selection ────────────────────────────────────────────────────────────
     selectedHouse = signal<HouseInterface | null>(null);
     selectedStreet = signal<StreetInterface | null>(null);
@@ -90,7 +93,7 @@ export class GraphStateService {
         { id: 'Annealing' as ModelType, name: 'Simulated Annealing', description: 'Метрополис-отжиг' },
         { id: 'Dfs' as ModelType, name: 'DFS', description: 'Поиск в глубину' },
         { id: 'Bfs' as ModelType, name: 'BFS', description: 'Поиск в ширину' },
-        { id: 'AStar' as ModelType, name: 'A*', description: 'Эвристический' },
+        { id: 'A*' as ModelType, name: 'A*', description: 'Эвристический' },
         { id: 'Aco' as ModelType, name: 'ACO', description: 'Муравьиный алг.' },
     ];
 

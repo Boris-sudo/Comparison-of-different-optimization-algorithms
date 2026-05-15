@@ -6,7 +6,7 @@ import { RegistrationResponse, UserResponse } from "../interfaces/user.interface
 import { redis } from "../server";
 
 import * as crypto from "../utils/crypto";
-import * as UserService from "../services/user.service";
+import * as CityService from "../services/city.service";
 
 @Route('auth')
 export class UserController extends Controller {
@@ -15,9 +15,10 @@ export class UserController extends Controller {
     @Response<RegistrationResponse>(200, "succeed")
     @OperationId("register")
     public async register(): Promise<RegistrationResponse> {
-        const user = await UserService.createNewUser();
+        const city = await CityService.createRandomCity();
         const token = crypto.generateBearerToken();
-        await redis.set(token, JSON.stringify(user));
+        const redisCity = CityService.createRedisInterface(city);
+        await redis.set(token, redisCity);
         return { token: 'Bearer: ' + token };
     }
 
@@ -29,7 +30,7 @@ export class UserController extends Controller {
     public async profile(
         @Request() request: koa.Request
     ): Promise<UserResponse> {
-        const myContext = request.ctx.myContext;
-        return myContext;
+        const city = request.ctx.myContext;
+        return { city: city };
     }
 }

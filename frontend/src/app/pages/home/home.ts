@@ -11,6 +11,7 @@ import { GraphEditService } from '../../services/graph/graph-edit.service';
 import { RouteService } from "../../services/api/route.service";
 import { D3Node, D3Link } from '../../services/graph/graph-state.service';
 import * as d3 from 'd3';
+import { GraphRouteService } from "../../services/graph/graph-route.service";
 
 @Component({
     selector: 'app-home',
@@ -19,34 +20,45 @@ import * as d3 from 'd3';
     styleUrl: './home.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Home implements OnInit, AfterViewInit, OnDestroy {
+export class Home implements AfterViewInit, OnDestroy {
     @ViewChild('graphSvg') graphSvg!: ElementRef<SVGSVGElement>;
 
     constructor(
         public profileApi: ProfileApiService,
+        public route: GraphRouteService,
         public state: GraphStateService,
         public render: GraphRenderService,
         public edit: GraphEditService,
-        public routeService: RouteService,
         private ngZone: NgZone,
         private cdr: ChangeDetectorRef,
     ) {
         effect(() => {
-            const isAuth = this.profileApi.isAuthenticated();
-            if (isAuth) {
-                this.state.isLoading.set(false);
-                setTimeout(() => {
-                    this.cdr.detectChanges();
-                    this.loadGraph();
-                    setTimeout(() => this.initGraph(), 150);
-                }, 500);
+            const state = this.state.reloadGraph();
+            if (state) {
+                this.initGraph();
+                this.render.updateNodeStyles();
+                this.render.updateLinkStyles();
+                this.state.reloadGraph.set(false);
             }
         });
     }
 
-    async ngOnInit() {}
-
-    ngAfterViewInit() {}
+    ngAfterViewInit() {
+        setTimeout(() => {
+            const el = this.graphSvg?.nativeElement;
+            if (el) {
+                this.render.width = el.clientWidth || 900;
+                this.render.height = el.clientHeight || 600;
+                this.render.simulation?.force('center',
+                    d3.forceCenter(this.render.width / 2, this.render.height / 2)
+                );
+                this.render.simulation?.alpha(0.1).restart();
+                this.initGraph();
+                this.render.updateLinkStyles();
+                this.render.updateNodeStyles();
+            }
+        }, 50);
+    }
 
     ngOnDestroy() {
         this.render.destroy();
@@ -119,27 +131,6 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
         }
     }
 
-    // ─── Tab ──────────────────────────────────────────────────────────────────
-
-    onTabChange(tab: 'editor' | 'route') {
-        this.state.activeTab.set(tab);
-        this.cdr.detectChanges();
-        if (tab === 'editor') {
-            setTimeout(() => {
-                const el = this.graphSvg?.nativeElement;
-                if (el) {
-                    this.render.width = el.clientWidth || 900;
-                    this.render.height = el.clientHeight || 600;
-                    this.render.simulation?.force('center',
-                        d3.forceCenter(this.render.width / 2, this.render.height / 2)
-                    );
-                    this.render.simulation?.alpha(0.1).restart();
-                    this.initGraph();
-                }
-            }, 50);
-        }
-    }
-
     // ─── Edit mode ────────────────────────────────────────────────────────────
 
     setEditMode(mode: 'select' | 'add-node' | 'add-edge') {
@@ -152,44 +143,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // ─── Route ────────────────────────────────────────────────────────────────
-
-    async buildRoute() {
-        if (!this.state.routePrompt().trim() || !this.state.houses.length) return;
-        this.state.isBuildingRoute.set(true);
-        this.state.error.set(null);
-        this.state.clearRoute();
-        this.cdr.detectChanges();
-
-        try {
-            const result = await this.routeService.buildRoute({
-                model: this.state.selectedAlgorithm(),
-                prompt: this.state.routePrompt(),
-                startPoint: this.state.houses.filter(house => house.category === 0)[0].id,
-            });
-            this.state.setRoute(result);
-            this.state.activeTab.set('editor');
-            this.cdr.detectChanges();
-            setTimeout(() => {
-                this.initGraph();
-                this.render.updateNodeStyles();
-                this.render.updateLinkStyles();
-            }, 50);
-        } catch (e: any) {
-            this.state.error.set(e?.message ?? 'Ошибка при построении маршрута');
-        } finally {
-            this.state.isBuildingRoute.set(false);
-            this.cdr.detectChanges();
-        }
-    }
-
-    clearRoute() {
-        this.state.clearRoute();
-        this.render.updateNodeStyles();
-        this.render.updateLinkStyles();
-        this.cdr.detectChanges();
-    }
-
+    
     async generateCity() {
+        this.route.clearRoute();
         await this.edit.generateCity(this.state.newCityNodeCount());
         this.cdr.detectChanges();
         setTimeout(() => {
@@ -198,31 +154,37 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     }
 
     async saveStreetLength() {
+        this.route.clearRoute();
         await this.edit.saveStreetLength();
         this.cdr.detectChanges();
     }
 
     async deleteStreet() {
+        this.route.clearRoute();
         await this.edit.deleteStreet();
         this.cdr.detectChanges();
     }
 
     async changeHouseCategory(categoryId: number) {
+        this.route.clearRoute();
         await this.edit.changeHouseCategory(categoryId);
         this.cdr.detectChanges();
         this.render.updateNodeStyles();
     }
 
     async deleteHouse() {
+        this.route.clearRoute();
         await this.edit.deleteHouse();
         this.cdr.detectChanges();
         this.render.updateNodeStyles();
         this.render.updateLinkStyles();
     }
 
-    // ─── Register ────────────────────────────────────────────────────────────────
-
-    register() {
-        this.profileApi.register();
+    focusNode(nodeId: string) {
+        const node = this.state.d3Nodes.find(n => n.id === nodeId);
+        if (!node || node.x === undefined || node.y === undefined) return;
+        this.render.focusOn(node.x, node.y);
     }
+    
+    protected readonly Math = Math;
 }

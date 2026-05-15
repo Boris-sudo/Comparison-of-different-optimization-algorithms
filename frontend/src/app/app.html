@@ -1,0 +1,72 @@
+<div class="home-layout">
+    @if (profileApi.notAuthenticated()) {
+        <div class="welcome-screen">
+            <div class="welcome-card">
+                <div class="welcome-icon">🗺️</div>
+                <h1 class="welcome-title">RouteOptimizer</h1>
+                <p class="welcome-sub">Интерактивное сравнение алгоритмов оптимизации маршрутов</p>
+                <button class="btn-primary" (click)="register()">
+                    Начать работу →
+                </button>
+            </div>
+        </div>
+    } @else {
+        <div class="app-shell">
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <span class="sidebar-logo">🗺️</span>
+                    <span class="sidebar-title">RouteOpt</span>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <button class="nav-item"
+                            [class.nav-item--active]="state.activeTab() === 'editor'"
+                            (click)="navigate('editor')">
+                        <span class="nav-icon">⬡</span>
+                        <span>Граф</span>
+                    </button>
+                    <button class="nav-item"
+                            [class.nav-item--active]="state.activeTab() === 'route'"
+                            (click)="navigate('route')">
+                        <span class="nav-icon">◎</span>
+                        <span>Маршрут</span>
+                    </button>
+                </nav>
+
+                <div class="sidebar-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">{{ houses_count }}</span>
+                        <span class="stat-label">вершин</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ links_count / 2 }}</span>
+                        <span class="stat-label">рёбер</span>
+                    </div>
+                    @if (state.hasRoute()) {
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-value">{{ route_length }}</span>
+                            <span class="stat-label">длина</span>
+                        </div>
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-value">{{ Math.floor(state.routeDuration().network / 1000) }}s</span>
+                            <span class="stat-label">работа нейронки</span>
+                        </div>
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-value">{{ state.routeDuration().algo }}ms</span>
+                            <span class="stat-label">работа алгоритма</span>
+                        </div>
+                    }
+                </div>
+            </aside>
+
+            <!-- Main -->
+            <main class="main-area">
+
+                <router-outlet/>
+
+            </main>
+        </div>
+    }
+</div>
