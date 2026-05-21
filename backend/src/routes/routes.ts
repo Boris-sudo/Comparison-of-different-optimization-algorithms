@@ -64,6 +64,37 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PathStatisticsInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "duration": {"ref":"PathAnalyzeDuration","required":true},
+            "length": {"dataType":"double","required":true},
+            "main_points": {"dataType":"array","array":{"dataType":"string"},"required":true},
+            "points_count": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pair_PathStatisticsInterface_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"second":{"ref":"PathStatisticsInterface","required":true},"first":{"ref":"PathStatisticsInterface","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pair_ModelType_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"second":{"ref":"ModelType","required":true},"first":{"ref":"ModelType","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ComparePathPostInterface": {
+        "dataType": "refObject",
+        "properties": {
+            "models": {"ref":"Pair_ModelType_","required":true},
+            "prompt": {"dataType":"string","required":true},
+            "startPoint": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "StreetInterface": {
         "dataType": "refObject",
         "properties": {
@@ -84,6 +115,8 @@ const models: TsoaRoute.Models = {
             "time": {"dataType":"double","required":true},
             "price": {"dataType":"double","required":true},
             "weather": {"dataType":"boolean","required":true},
+            "x": {"dataType":"double"},
+            "y": {"dataType":"double"},
         },
         "additionalProperties": false,
     },
@@ -217,6 +250,38 @@ export function RegisterRoutes(router: KoaRouter) {
 
             return templateService.apiHandler({
               methodName: 'createPath',
+              controller,
+              context,
+              validatedArgs,
+              successStatus: undefined,
+            });
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsPathController_comparePath: Record<string, TsoaRoute.ParameterSchema> = {
+                request: {"in":"request","name":"request","required":true,"dataType":"object"},
+                dto: {"in":"body","name":"dto","required":true,"ref":"ComparePathPostInterface"},
+        };
+        router.post('/path/comparePath',
+            authenticateMiddleware([{"auth":[]}]),
+            ...(fetchMiddlewares<Middleware>(PathController)),
+            ...(fetchMiddlewares<Middleware>(PathController.prototype.comparePath)),
+
+            async function PathController_comparePath(context: Context, next: Next) {
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = templateService.getValidatedArgs({ args: argsPathController_comparePath, context, next });
+            } catch (err) {
+              const error = err as any;
+              error.message ||= JSON.stringify({ fields: error.fields });
+              context.status = error.status;
+              context.throw(context.status, error.message, error);
+            }
+
+            const controller = new PathController();
+
+            return templateService.apiHandler({
+              methodName: 'comparePath',
               controller,
               context,
               validatedArgs,

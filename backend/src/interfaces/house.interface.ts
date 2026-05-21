@@ -8,6 +8,8 @@ export interface HouseInterface {
     time: number;
     price: number;
     weather: boolean;
+    x?: number;
+    y?: number;
 }
 
 export interface HouseChangeInterface {

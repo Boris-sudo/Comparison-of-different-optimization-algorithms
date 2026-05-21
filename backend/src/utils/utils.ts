@@ -1,5 +1,10 @@
 import * as koa from 'koa';
 
+export type Pair<T> = {
+    first: T;
+    second: T;
+}
+
 export const delay = function (ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

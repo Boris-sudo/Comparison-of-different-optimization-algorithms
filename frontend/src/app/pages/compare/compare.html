@@ -1,0 +1,125 @@
+<div class="route-view">
+    <div class="route-form-card">
+        <h2 class="route-form-title">Построение маршрута</h2>
+
+        <label class="field-label">Описание</label>
+        <textarea
+                class="field-textarea"
+                [(ngModel)]="state.routePrompt"
+                placeholder="Например: Культурная прогулка — музей, галерея, кафе"
+                rows="3"
+        ></textarea>
+
+        <label class="field-label" style="margin-top: 1.5rem">Первый алгоритм</label>
+        <div class="algo-grid">
+            @for (algo of state.availableAlgorithms; track algo.id) {
+                <button
+                        class="algo-card"
+                        [class.algo-card--active]="algorithms.first() === algo.id"
+                        (click)="algorithms.first.set(algo.id)"
+                >
+                    <span class="algo-card-name">{{ algo.name }}</span>
+                    <span class="algo-card-desc">{{ algo.description }}</span>
+                </button>
+            }
+        </div>
+        <label class="field-label" style="margin-top: 1.5rem">Второй алгоритм</label>
+        <div class="algo-grid">
+            @for (algo of state.availableAlgorithms; track algo.id) {
+                <button
+                        class="algo-card"
+                        [class.algo-card--active]="algorithms.second() === algo.id"
+                        (click)="algorithms.second.set(algo.id)"
+                >
+                    <span class="algo-card-name">{{ algo.name }}</span>
+                    <span class="algo-card-desc">{{ algo.description }}</span>
+                </button>
+            }
+        </div>
+
+        <button
+                class="btn-primary btn-build"
+                (click)="buildRoute()"
+                [disabled]="isBuilding() || !state.routePrompt().trim()"
+        >
+            @if (isBuilding()) {
+                <span class="spinner spinner--sm"></span> Строим маршрут...
+            } @else {
+                Построить маршрут →
+            }
+        </button>
+
+        @if (state.error()) {
+            <div class="error-box">{{ state.error() }}</div>
+        }
+
+        @if (statistic()) {
+            <div class="stats-block">
+                <div class="stats-header">
+                    <span class="stats-title">Статистика маршрутов</span>
+                </div>
+
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Метрика</th>
+                            <th>{{ algorithms.first() }}</th>
+                            <th>{{ algorithms.second() }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Длина маршрута</td>
+                            <td class="stats-val">{{ statistic()?.first ? statistic()?.first?.length : '_' }}</td>
+                            <td class="stats-val">{{ statistic()?.second ? statistic()?.second?.length : '_' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Всего точек</td>
+                            <td class="stats-val">{{ statistic()?.first ? statistic()?.first?.points_count : '_' }}</td>
+                            <td class="stats-val">{{ statistic()?.second ? statistic()?.second?.points_count : '_' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Время алгоритма</td>
+                            <td class="stats-val">{{ statistic()?.first ? statistic()?.first?.duration?.algo : '_' }}</td>
+                            <td class="stats-val">{{ statistic()?.second ? statistic()?.second?.duration?.algo : '_' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Время языковой модели</td>
+                            <td class="stats-val">{{ statistic()?.first ? statistic()?.first?.duration?.network : '_' }}</td>
+                            <td class="stats-val">{{ statistic()?.second ? statistic()?.second?.duration?.network : '_' }}</td>
+                        </tr>
+                        <tr>
+                            <td>Предложенный путь</td>
+                            <td class="stats-val">
+                                <div class="route-chips">
+                                    @for (pointId of statistic()?.first?.main_points || []; track pointId; let last = $last) {
+                                        <span class="route-chip">
+                                            {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.icon || '📍' }}
+                                            {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.name || '—' }}
+                                        </span>
+                                        @if (!last) {
+                                            <span class="chip-arrow">→</span>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                            <td class="stats-val">
+                                <div class="route-chips">
+                                    @for (pointId of statistic()?.second?.main_points || []; track pointId; let last = $last) {
+                                        <span class="route-chip">
+                                            {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.icon || '📍' }}
+                                            {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.name || '—' }}
+                                        </span>
+                                        @if (!last) {
+                                            <span class="chip-arrow">→</span>
+                                        }
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

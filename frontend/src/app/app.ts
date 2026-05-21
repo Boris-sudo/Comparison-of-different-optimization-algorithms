@@ -45,7 +45,7 @@ export class App {
         });
     }
 
-    navigate(tab: 'editor' | 'route') {
+    navigate(tab: 'editor' | 'route' | 'compare') {
         this.state.activeTab.set(tab);
         this.cdr.detectChanges();
         this.router.navigate([tab]);

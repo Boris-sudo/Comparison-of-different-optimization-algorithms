@@ -24,7 +24,6 @@ export class Home implements AfterViewInit, OnDestroy {
     @ViewChild('graphSvg') graphSvg!: ElementRef<SVGSVGElement>;
 
     constructor(
-        public profileApi: ProfileApiService,
         public route: GraphRouteService,
         public state: GraphStateService,
         public render: GraphRenderService,
@@ -109,26 +108,19 @@ export class Home implements AfterViewInit, OnDestroy {
                 }
             };
 
-            if (this.state.houses.length === 0) this.loadGraph();
+            if (this.state.houses.length === 0) {
+                this.state.loadGraph();
+                this.cdr.detectChanges();
+            }
 
             if (this.state.houses.length > 0) {
                 this.state.buildD3Data();
                 this.render.buildSimulation();
                 this.render.renderGraph();
                 this.state.graphInitialized = true;
+                this.state.reloadGraph.set(true);
             }
         });
-    }
-
-    loadGraph() {
-        const user = this.profileApi.currentUser();
-        if (!user?.city?.houses) return;
-
-        if (!this.state.graphInitialized) {
-            this.state.houses = [...user.city.houses];
-            this.state.buildStreetList();
-            this.cdr.detectChanges();
-        }
     }
 
     // ─── Edit mode ────────────────────────────────────────────────────────────

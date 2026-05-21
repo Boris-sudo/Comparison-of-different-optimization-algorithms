@@ -2,9 +2,10 @@ import OpenAI from "openai";
 import { config } from "../config";
 
 import {
+    ComparePathCreateInterface,
     LocationItem, PathAnalyzeDuration,
     PathCreateInterface,
-    PathResponseInterface,
+    PathResponseInterface, PathStatisticsInterface,
     PromptElement
 } from "../interfaces/path.interface";
 import { MappedCityInterface } from "../interfaces/city.interface";
@@ -15,6 +16,8 @@ import { buildRouteInOrder, DynamicAPSP } from "./path-build.service";
 import * as CategoryService from './category.service';
 import { AStarService } from "./algorithms/a_star.service";
 import { BfsService } from "./algorithms/bfs.service";
+import { Pair } from "../utils/utils";
+import { AcoService } from "./algorithms/aco.service";
 
 const openai = new OpenAI({
     apiKey: config.OpenAiApiKey,
@@ -171,8 +174,6 @@ const parsePrompt = async function (
         }
     }
 
-    console.log(parsed);
-
     return parsed;
 }
 
@@ -210,7 +211,9 @@ export const createPath = async function (
             break;
         }
         case "ACO": {
-            throw new Error("ACO algorithm not implemented yet");
+            const model = new AcoService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
         }
         default: {
             throw new Error(`Unknown algorithm: ${ path.model }`);
@@ -227,4 +230,110 @@ export const createPath = async function (
     const result = buildRouteInOrder(apsp.city, points_ids);
 
     return { ...result, duration: duration_result } as PathResponseInterface;
+}
+
+/** Creates path in city by user prompt **/
+export const comparePaths = async function (
+    apsp: DynamicAPSP,
+    path: ComparePathCreateInterface
+): Promise<Pair<PathStatisticsInterface>> {
+    let start_time = Date.now();
+    let duration_result: PathAnalyzeDuration = { network: 0, algo: 0 };
+    const points: PromptElement[] = await parsePrompt(path.prompt);
+    duration_result.network = Date.now() - start_time;
+
+    let pathResponse: Array<LocationItem> = [];
+    switch (path.models.first) {
+        case "Annealing": {
+            const model = new AnnealingService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        case "Dfs": {
+            const model = new DfsService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        case "Bfs": {
+            const model = new BfsService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        case "A*": {
+            const model = new AStarService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        case "ACO": {
+            const model = new AcoService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        default: {
+            throw new Error(`Unknown algorithm: ${ path.models.first }`);
+        }
+    }
+
+    let points_ids: string[] = [];
+    for (const locationItem of pathResponse)
+        if (locationItem != undefined)
+            points_ids.push(locationItem.location.id);
+    duration_result.algo = Date.now() - start_time - duration_result.network;
+    const first_result = buildRouteInOrder(apsp.city, points_ids);
+    first_result.duration = {...duration_result};
+
+    start_time = Date.now();
+    switch (path.models.second) {
+        case "Annealing": {
+            const model = new AnnealingService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        case "Dfs": {
+            const model = new DfsService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        case "Bfs": {
+            const model = new BfsService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        case "A*": {
+            const model = new AStarService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        case "ACO": {
+            const model = new AcoService(apsp, points, path.startPoint);
+            pathResponse = await model.generate();
+            break;
+        }
+        default: {
+            throw new Error(`Unknown algorithm: ${ path.models.second }`);
+        }
+    }
+
+    points_ids = [];
+    for (const locationItem of pathResponse)
+        if (locationItem != undefined)
+            points_ids.push(locationItem.location.id);
+    duration_result.algo = Date.now() - start_time;
+    const second_result = buildRouteInOrder(apsp.city, points_ids);
+    second_result.duration = {...duration_result};
+
+    return {
+        first: {
+            duration: first_result.duration,
+            length: first_result.length,
+            main_points: first_result.points.filter(point => point.role === 'main').map(point => point.id),
+            points_count: first_result.points.length,
+        },
+        second: {
+            duration: second_result.duration,
+            length: second_result.length,
+            main_points: second_result.points.filter(point => point.role === 'main').map(point => point.id),
+            points_count: second_result.points.length,
+        }
+    };
 }

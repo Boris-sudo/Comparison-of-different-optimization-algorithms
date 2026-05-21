@@ -33,6 +33,12 @@
                         <span class="nav-icon">◎</span>
                         <span>Маршрут</span>
                     </button>
+                    <button class="nav-item"
+                            [class.nav-item--active]="state.activeTab() === 'compare'"
+                            (click)="navigate('compare')">
+                        <span class="nav-icon">◎</span>
+                        <span>Сравнение</span>
+                    </button>
                 </nav>
 
                 <div class="sidebar-stats">
@@ -64,7 +70,9 @@
             <!-- Main -->
             <main class="main-area">
 
-                <router-outlet/>
+                <div class="scroll-content">
+                    <router-outlet/>
+                </div>
 
             </main>
         </div>

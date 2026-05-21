@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Home } from "./pages/home/home";
 import { CreatePath } from "./pages/create-path/create-path";
+import { Compare } from "./pages/compare/compare";
 
 export const routes: Routes = [
     {
@@ -16,7 +17,12 @@ export const routes: Routes = [
     {
         path: 'route',
         component: CreatePath,
-        title: 'Главная',
+        title: 'Построение',
+    },
+    {
+        path: 'compare',
+        component: Compare,
+        title: 'Сравнение',
     },
     {
         path: '**',

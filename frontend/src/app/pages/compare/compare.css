@@ -1,0 +1,58 @@
+@import "../../app.css";
+
+.stats-block {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.stats-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.stats-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.stats-table th {
+    text-align: left;
+    padding: 0.4rem 0.6rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+}
+
+.stats-table td {
+    padding: 0.45rem 0.6rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.stats-table tr:last-child td {
+    border-bottom: none;
+}
+
+.stats-val {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary) !important;
+    font-weight: 500;
+}
+
+.stats-table tr:hover td {
+    background: rgba(139, 92, 246, 0.04);
+}

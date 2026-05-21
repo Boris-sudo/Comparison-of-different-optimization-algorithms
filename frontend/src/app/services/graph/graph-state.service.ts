@@ -8,6 +8,7 @@ import {
     PathResponseInterface
 } from '../../../generated';
 import * as d3 from 'd3';
+import { ProfileApiService } from "../api/profile.api";
 
 export interface D3Node extends d3.SimulationNodeDatum {
     id: string;
@@ -46,7 +47,7 @@ export class GraphStateService {
 
     // ─── UI state ─────────────────────────────────────────────────────────────
     editMode = signal<'select' | 'add-node' | 'add-edge'>('select');
-    activeTab = signal<'editor' | 'route'>('editor');
+    activeTab = signal<'editor' | 'route' | 'compare'>('editor');
     isLoading = signal(false);
     isGenerating = signal(false);
     isBuildingRoute = signal(false);
@@ -60,8 +61,9 @@ export class GraphStateService {
     routeOuterPoints = signal<string[]>([]);
     routeLength = signal<number>(0);
     routePrompt = signal('');
-    selectedAlgorithm = signal<ModelType>('Annealing' as ModelType);
+    selectedAlgorithm = signal<ModelType>('Annealing');
     routeDuration = signal<PathAnalyzeDuration>({ network: 0, algo: 0 });
+    routeSegmentsLength = signal<number[]>([]);
 
     // ─── Computed ─────────────────────────────────────────────────────────────
     hasRoute = computed(() => this.routeResult().length > 0);
@@ -94,10 +96,26 @@ export class GraphStateService {
         { id: 'Dfs' as ModelType, name: 'DFS', description: 'Поиск в глубину' },
         { id: 'Bfs' as ModelType, name: 'BFS', description: 'Поиск в ширину' },
         { id: 'A*' as ModelType, name: 'A*', description: 'Эвристический' },
-        { id: 'Aco' as ModelType, name: 'ACO', description: 'Муравьиный алг.' },
+        { id: 'ACO' as ModelType, name: 'ACO', description: 'Муравьиный алг.' },
     ];
 
+    constructor(
+        public profileApi: ProfileApiService,
+    ) {
+    }
+
     // ─── Methods ──────────────────────────────────────────────────────────────
+
+    loadGraph() {
+        const user = this.profileApi.currentUser();
+        if (!user?.city?.houses) return;
+
+        if (!this.graphInitialized) {
+            this.houses = [...user.city.houses];
+            this.buildStreetList();
+            this.reloadGraph.set(true);
+        }
+    }
 
     buildStreetList() {
         this.streets = [];
@@ -138,7 +156,7 @@ export class GraphStateService {
 
     setRoute(route: PathResponseInterface) {
         this.routeResult.set(route.points ?? []);
-        this.routeLength.set(length);
+        this.routeLength.set(route.length);
         this.routeDuration.set(route.duration);
         const main: string[] = [];
         const outer: string[] = [];
@@ -156,6 +174,7 @@ export class GraphStateService {
         this.routeMainPoints.set([]);
         this.routeOuterPoints.set([]);
         this.routeLength.set(0);
+        this.routeSegmentsLength.set([]);
     }
 
     getCategoryForHouse(houseId: string): number {
@@ -173,5 +192,6 @@ export class GraphStateService {
         this.edgeSourceNode.set(null);
         this.graphInitialized = false;
         this.clearRoute();
+        this.reloadGraph.set(true);
     }
 }

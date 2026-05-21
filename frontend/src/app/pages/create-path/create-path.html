@@ -1,0 +1,69 @@
+<div class="route-view">
+    <div class="route-form-card">
+        <h2 class="route-form-title">Построение маршрута</h2>
+
+        <label class="field-label">Описание</label>
+        <textarea
+                class="field-textarea"
+                [(ngModel)]="state.routePrompt"
+                placeholder="Например: Культурная прогулка — музей, галерея, кафе"
+                rows="3"
+        ></textarea>
+
+        <label class="field-label" style="margin-top: 1.5rem">Алгоритм</label>
+        <div class="algo-grid">
+            @for (algo of state.availableAlgorithms; track algo.id) {
+                <button
+                        class="algo-card"
+                        [class.algo-card--active]="state.selectedAlgorithm() === algo.id"
+                        (click)="state.selectedAlgorithm.set(algo.id)"
+                >
+                    <span class="algo-card-name">{{ algo.name }}</span>
+                    <span class="algo-card-desc">{{ algo.description }}</span>
+                </button>
+            }
+        </div>
+
+        <button
+                class="btn-primary btn-build"
+                (click)="buildRoute()"
+                [disabled]="state.isBuildingRoute() || !state.routePrompt().trim()"
+        >
+            @if (state.isBuildingRoute()) {
+                <span class="spinner spinner--sm"></span> Строим маршрут...
+
+            } @else {
+
+Построить маршрут →
+
+            }
+        </button>
+
+        @if (state.error()) {
+            <div class="error-box">{{ state.error() }}</div>
+        }
+
+        @if (state.hasRoute()) {
+            <div class="route-result-block">
+                <div class="route-result-header">
+                    <span>Маршрут готов</span>
+                    <span class="route-result-badge">
+                        {{ state.routeMainPoints().length }} точек
+                    </span>
+                </div>
+                <p class="route-result-hint">Открыт во вкладке «Граф»</p>
+                <div class="route-chips">
+                    @for (pointId of state.routeMainPoints(); track pointId; let last = $last) {
+                        <span class="route-chip">
+                            {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.icon || '📍' }}
+                            {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.name || '—' }}
+                        </span>
+                        @if (!last) {
+                            <span class="chip-arrow">→</span>
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

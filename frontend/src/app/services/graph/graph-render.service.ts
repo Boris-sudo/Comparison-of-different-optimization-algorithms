@@ -1,6 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import * as d3 from 'd3';
 import { GraphStateService, D3Node, D3Link } from './graph-state.service';
+import { ProfileApiService } from "../api/profile.api";
 
 @Injectable({ providedIn: 'root' })
 export class GraphRenderService {
@@ -70,6 +71,14 @@ export class GraphRenderService {
     buildSimulation() {
         this.simulation?.stop();
 
+        const hasLayoutCoords = this.state.d3Nodes.every(
+            n => n.house.x !== undefined && n.house.y !== undefined
+        );
+
+        if (hasLayoutCoords) {
+            this.applyBackendLayout();
+        }
+
         const connectedIds = new Set<string>();
         this.state.d3Links.forEach(link => {
             connectedIds.add(typeof link.source === 'string' ? link.source : (link.source as D3Node).id);
@@ -79,24 +88,15 @@ export class GraphRenderService {
         this.simulation = d3.forceSimulation<D3Node, D3Link>(this.state.d3Nodes)
             .force('link', d3.forceLink<D3Node, D3Link>(this.state.d3Links)
                 .id(d => d.id)
-                .distance(
-                    this.state.houses.length < 100 ? 130 :
-                        this.state.houses.length < 500 ? 500 : 3000
-                )
-                .strength(0.3))
+                .distance(130)
+                .strength(0.3)
+            )
             .force('charge', d3.forceManyBody()
                 .strength(d => connectedIds.has((d as D3Node).id) ? -400 : -80)
-                .distanceMax(
-                    this.state.houses.length < 100 ? 400 :
-                        this.state.houses.length < 500 ? 700 : 1000
-                )
+                .distanceMax(400)
             )
-            .force('center', d3.forceCenter(this.width / 2, this.height / 2).strength(0.05))
-            .force('isolatedX', d3.forceX(this.width / 2)
-                .strength(d => connectedIds.has((d as D3Node).id) ? 0 : 0.08))
-            .force('isolatedY', d3.forceY(this.height / 2)
-                .strength(d => connectedIds.has((d as D3Node).id) ? 0 : 0.08))
-            .force('collision', d3.forceCollide(52))
+            .force('center', null)
+            .force('collision', d3.forceCollide(13))
             .alphaDecay(0.02)
             .velocityDecay(0.4)
             .alpha(0.8)
@@ -104,10 +104,56 @@ export class GraphRenderService {
             .on('end', () => this.fitGraph());
     }
 
+    private applyBackendLayout() {
+        if (this.state.d3Nodes.length === 0) return;
+
+        // Находим границы координат с бэка
+        const xs = this.state.d3Nodes.map(n => n.house.x ?? 0);
+        const ys = this.state.d3Nodes.map(n => n.house.y ?? 0);
+        const minX = Math.min(...xs), maxX = Math.max(...xs);
+        const minY = Math.min(...ys), maxY = Math.max(...ys);
+        const rangeX = maxX - minX || 1;
+        const rangeY = maxY - minY || 1;
+        const n = this.state.d3Nodes.length;
+
+        const padding = 80;
+        let multi = 1;
+        if (n < 100) multi = 2;
+        else if (n < 250) multi = n / 70;
+        else if (n < 500) multi = n / 100;
+        else multi = n / 200;
+
+        const scaleX = (this.width * multi - padding * 2) / rangeX;
+        const scaleY = (this.height * multi - padding * 2) / rangeY;
+        const scale = Math.min(scaleX, scaleY);
+
+        // Масштабируем и центрируем
+        const offsetX = (this.width - rangeX * scale) / 2;
+        const offsetY = (this.height - rangeY * scale) / 2;
+
+        for (const node of this.state.d3Nodes) {
+            node.x = offsetX + ((node.house.x ?? 0) - minX) * scale;
+            node.y = offsetY + ((node.house.y ?? 0) - minY) * scale;
+            // Слегка фиксируем — симуляция может чуть двигать но не далеко
+            node.fx = node.x;
+            node.fy = node.y;
+        }
+
+        // Размораживаем через секунду — после первичной отрисовки
+        setTimeout(() => {
+            for (const node of this.state.d3Nodes) {
+                node.fx = null;
+                node.fy = null;
+            }
+            this.fitGraph();
+            this.simulation?.alpha(0.1).restart();
+        }, 800);
+    }
+
     focusOn(x: number, y: number, scale = 1.8) {
         if (!this.svg || !this.zoomBehavior) return;
 
-        const tx = this.width  / 2 - x * scale;
+        const tx = this.width / 2 - x * scale;
         const ty = this.height / 2 - y * scale;
 
         const transform = d3.zoomIdentity.translate(tx, ty).scale(scale);
@@ -141,8 +187,8 @@ export class GraphRenderService {
             .attr('cursor', 'pointer')
             .call(d3.drag<SVGGElement, D3Node>()
                 .on('start', (e, d) => this.dragStarted(e, d))
-                .on('drag',  (e, d) => this.dragged(e, d))
-                .on('end',   (e, d) => this.dragEnded(e, d))
+                .on('drag', (e, d) => this.dragged(e, d))
+                .on('end', (e, d) => this.dragEnded(e, d))
             )
             .on('click', (event, d) => {
                 event.stopPropagation();
@@ -216,11 +262,11 @@ export class GraphRenderService {
             .datum(node)
             .attr('class', 'graph-node')
             .attr('cursor', 'pointer')
-            .attr('transform', `translate(${node.x ?? 0}, ${node.y ?? 0})`)
+            .attr('transform', `translate(${ node.x ?? 0 }, ${ node.y ?? 0 })`)
             .call(d3.drag<SVGGElement, D3Node>()
                 .on('start', (e, d) => this.dragStarted(e, d))
-                .on('drag',  (e, d) => this.dragged(e, d))
-                .on('end',   (e, d) => this.dragEnded(e, d))
+                .on('drag', (e, d) => this.dragged(e, d))
+                .on('end', (e, d) => this.dragEnded(e, d))
             )
             .on('click', (event, d) => {
                 event.stopPropagation();
@@ -273,7 +319,7 @@ export class GraphRenderService {
             .attr('y', d => (((d.source as D3Node).y ?? 0) + ((d.target as D3Node).y ?? 0)) / 2 - 7);
 
         this.g.selectAll<SVGGElement, D3Node>('.graph-node')
-            .attr('transform', d => `translate(${d.x ?? 0}, ${d.y ?? 0})`);
+            .attr('transform', d => `translate(${ d.x ?? 0 }, ${ d.y ?? 0 })`);
     }
 
     private fitGraph() {
@@ -323,27 +369,27 @@ export class GraphRenderService {
 
         this.g.selectAll<SVGGElement, D3Node>('.graph-node').each((d, i, nodes) => {
             const node = d3.select(nodes[i]);
-            const isSelected   = d.id === this.state.selectedHouse()?.id;
+            const isSelected = d.id === this.state.selectedHouse()?.id;
             const isEdgeSource = d.id === this.state.edgeSourceNode()?.id;
-            const routeIndex   = this.state.routeMainPoints().indexOf(d.id);
-            const outerIndex   = this.state.routeOuterPoints().indexOf(d.id);
-            const inRoute      = routeIndex >= 0;
-            const isOuter      = outerIndex >= 0;
-            const hue          = inRoute ? (routeIndex * 360) / Math.max(this.state.routeMainPoints().length, 1) : 0;
+            const routeIndex = this.state.routeMainPoints().indexOf(d.id);
+            const outerIndex = this.state.routeOuterPoints().indexOf(d.id);
+            const inRoute = routeIndex >= 0;
+            const isOuter = outerIndex >= 0;
+            const hue = inRoute ? (routeIndex * 360) / Math.max(this.state.routeMainPoints().length, 1) : 0;
 
             node.select('.node-circle')
                 .transition().duration(200)
                 .attr('fill',
-                    isSelected   ? '#4c1d95' :
+                    isSelected ? '#4c1d95' :
                         isEdgeSource ? '#064e3b' :
-                            inRoute      ? `hsl(${hue}, 60%, 18%)` :
-                                isOuter      ? '#282830' : '#0f0f23'
+                            inRoute ? `hsl(${ hue }, 60%, 18%)` :
+                                isOuter ? '#282830' : '#0f0f23'
                 )
                 .attr('stroke',
-                    isSelected   ? '#8b5cf6' :
+                    isSelected ? '#8b5cf6' :
                         isEdgeSource ? '#10b981' :
-                            inRoute      ? `hsl(${hue}, 70%, 55%)` :
-                                isOuter      ? '#6e6e70' : '#3b3b6b'
+                            inRoute ? `hsl(${ hue }, 70%, 55%)` :
+                                isOuter ? '#6e6e70' : '#3b3b6b'
                 )
                 .attr('stroke-width', isSelected || isEdgeSource || inRoute ? 2.5 : 2)
                 .attr('r', isSelected || isEdgeSource ? 26 : 22);
@@ -351,9 +397,9 @@ export class GraphRenderService {
             node.select('.node-glow')
                 .transition().duration(200)
                 .attr('stroke',
-                    isSelected   ? '#8b5cf6' :
+                    isSelected ? '#8b5cf6' :
                         isEdgeSource ? '#10b981' :
-                            inRoute      ? `hsl(${hue}, 70%, 55%)` : 'transparent'
+                            inRoute ? `hsl(${ hue }, 70%, 55%)` : 'transparent'
                 )
                 .attr('stroke-opacity', isSelected || isEdgeSource || inRoute ? 0.35 : 0);
 
@@ -363,7 +409,7 @@ export class GraphRenderService {
                     .attr('class', 'route-index')
                     .attr('text-anchor', 'middle')
                     .attr('y', -30)
-                    .attr('fill', `hsl(${hue}, 70%, 70%)`)
+                    .attr('fill', `hsl(${ hue }, 70%, 70%)`)
                     .attr('font-size', '10px')
                     .attr('font-weight', '700')
                     .text(routeIndex + 1);
@@ -389,7 +435,10 @@ export class GraphRenderService {
                     while (routeResult[l].role !== 'main') l--;
                     const mainPoints = this.state.routeMainPoints();
                     for (let k = 0; k < mainPoints.length - 1; k++) {
-                        if (mainPoints[k] === routeResult[l].id) { segIdx = k; break; }
+                        if (mainPoints[k] === routeResult[l].id) {
+                            segIdx = k;
+                            break;
+                        }
                     }
                     break;
                 }
@@ -401,9 +450,9 @@ export class GraphRenderService {
             link.transition().duration(200)
                 .attr('stroke',
                     isSelected ? '#f59e0b' :
-                        inRoute    ? `hsl(${hue}, 70%, 55%)` : '#2d2d4e'
+                        inRoute ? `hsl(${ hue }, 70%, 55%)` : '#2d2d4e'
                 )
-                .attr('stroke-width', isSelected ? 4 : inRoute ? 3 : 1.5)
+                // .attr('stroke-width', isSelected ? 4 : inRoute ? 3 : 1.5)
                 .attr('stroke-opacity', isSelected ? 1 : inRoute ? 1 : 0.7);
         });
     }

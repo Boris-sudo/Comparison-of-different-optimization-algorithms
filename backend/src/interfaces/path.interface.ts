@@ -1,4 +1,5 @@
 import { HouseInterface } from "./house.interface";
+import { Pair } from "../utils/utils";
 
 export type ModelType = 'Dfs' | 'Bfs' | 'Annealing' | 'ACO' | 'A*';
 
@@ -8,10 +9,30 @@ export interface PathCreateInterface {
     startPoint: HouseInterface;
 }
 
+export interface ComparePathCreateInterface {
+    models: Pair<ModelType>;
+    prompt: string;
+    startPoint: HouseInterface;
+}
+
+
 export interface PathPostInterface {
     model: ModelType;
     prompt: string;
     startPoint: string;
+}
+
+export interface ComparePathPostInterface {
+    models: Pair<ModelType>;
+    prompt: string;
+    startPoint: string;
+}
+
+export interface PathStatisticsInterface {
+    duration: PathAnalyzeDuration;
+    length: number;
+    main_points: string[];
+    points_count: number,
 }
 
 export interface PathResultItem {

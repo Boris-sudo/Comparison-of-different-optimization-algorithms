@@ -99,6 +99,85 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"PathStatisticsInterface": {
+				"properties": {
+					"duration": {
+						"$ref": "#/components/schemas/PathAnalyzeDuration"
+					},
+					"length": {
+						"type": "number",
+						"format": "double"
+					},
+					"main_points": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"points_count": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"duration",
+					"length",
+					"main_points",
+					"points_count"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pair_PathStatisticsInterface_": {
+				"properties": {
+					"second": {
+						"$ref": "#/components/schemas/PathStatisticsInterface"
+					},
+					"first": {
+						"$ref": "#/components/schemas/PathStatisticsInterface"
+					}
+				},
+				"required": [
+					"second",
+					"first"
+				],
+				"type": "object"
+			},
+			"Pair_ModelType_": {
+				"properties": {
+					"second": {
+						"$ref": "#/components/schemas/ModelType"
+					},
+					"first": {
+						"$ref": "#/components/schemas/ModelType"
+					}
+				},
+				"required": [
+					"second",
+					"first"
+				],
+				"type": "object"
+			},
+			"ComparePathPostInterface": {
+				"properties": {
+					"models": {
+						"$ref": "#/components/schemas/Pair_ModelType_"
+					},
+					"prompt": {
+						"type": "string"
+					},
+					"startPoint": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"models",
+					"prompt",
+					"startPoint"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"StreetInterface": {
 				"properties": {
 					"id": {
@@ -149,6 +228,14 @@
 					},
 					"weather": {
 						"type": "boolean"
+					},
+					"x": {
+						"type": "number",
+						"format": "double"
+					},
+					"y": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
@@ -352,6 +439,42 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/PathPostInterface"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/path/comparePath": {
+			"post": {
+				"operationId": "comparePath",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Pair_PathStatisticsInterface_"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Default"
+				],
+				"security": [
+					{
+						"auth": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ComparePathPostInterface"
 							}
 						}
 					}
