@@ -71,6 +71,7 @@ const models: TsoaRoute.Models = {
             "length": {"dataType":"double","required":true},
             "main_points": {"dataType":"array","array":{"dataType":"string"},"required":true},
             "points_count": {"dataType":"double","required":true},
+            "points": {"dataType":"array","array":{"dataType":"refObject","ref":"PathResultItem"},"required":true},
         },
         "additionalProperties": false,
     },

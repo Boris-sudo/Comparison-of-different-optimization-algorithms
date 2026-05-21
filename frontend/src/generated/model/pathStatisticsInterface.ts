@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { PathResultItem } from './pathResultItem';
 import { PathAnalyzeDuration } from './pathAnalyzeDuration';
 
 
@@ -15,5 +16,6 @@ export interface PathStatisticsInterface {
     length: number;
     main_points: Array<string>;
     points_count: number;
+    points: Array<PathResultItem>;
 }
 

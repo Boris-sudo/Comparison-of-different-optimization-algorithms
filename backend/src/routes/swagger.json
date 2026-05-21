@@ -117,13 +117,20 @@
 					"points_count": {
 						"type": "number",
 						"format": "double"
+					},
+					"points": {
+						"items": {
+							"$ref": "#/components/schemas/PathResultItem"
+						},
+						"type": "array"
 					}
 				},
 				"required": [
 					"duration",
 					"length",
 					"main_points",
-					"points_count"
+					"points_count",
+					"points"
 				],
 				"type": "object",
 				"additionalProperties": false

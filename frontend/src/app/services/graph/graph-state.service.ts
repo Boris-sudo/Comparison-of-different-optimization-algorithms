@@ -1,11 +1,11 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, WritableSignal } from '@angular/core';
 import {
     HouseInterface,
     StreetInterface,
     PathResultItem,
     ModelType,
     PathAnalyzeDuration,
-    PathResponseInterface
+    PathResponseInterface, PairPathStatisticsInterface
 } from '../../../generated';
 import * as d3 from 'd3';
 import { ProfileApiService } from "../api/profile.api";
@@ -25,6 +25,11 @@ export interface D3Link extends d3.SimulationLinkDatum<D3Node> {
     length: number;
     source: D3Node | string;
     target: D3Node | string;
+}
+
+export type Pair<T> = {
+    first: T,
+    second: T,
 }
 
 @Injectable({ providedIn: 'root' })
@@ -65,6 +70,13 @@ export class GraphStateService {
     routeDuration = signal<PathAnalyzeDuration>({ network: 0, algo: 0 });
     routeSegmentsLength = signal<number[]>([]);
 
+    // ─── Compare routes ────────────────────────────────────────────────────────────────
+    pairRoutes= signal<PairPathStatisticsInterface | null>(null);
+    algorithms: Pair<WritableSignal<ModelType>> = {
+        first: signal<ModelType>("Dfs"),
+        second: signal<ModelType>("Annealing"),
+    };
+
     // ─── Computed ─────────────────────────────────────────────────────────────
     hasRoute = computed(() => this.routeResult().length > 0);
 
@@ -89,6 +101,9 @@ export class GraphStateService {
         { id: 17, name: 'Университет', icon: '🎓' },
         { id: 18, name: 'Церковь', icon: '⛪' },
         { id: 19, name: 'Больница', icon: '🏥' },
+        { id: 20, name: 'Магазин вешалок', icon: '🏪👶🏿' },
+        { id: 21, name: 'Клуб клуб', icon: '🍷' },
+        { id: 22, name: 'Остров Эпштейна', icon: '🏝️' },
     ];
 
     readonly availableAlgorithms = [
@@ -101,8 +116,7 @@ export class GraphStateService {
 
     constructor(
         public profileApi: ProfileApiService,
-    ) {
-    }
+    ) {}
 
     // ─── Methods ──────────────────────────────────────────────────────────────
 
@@ -168,6 +182,27 @@ export class GraphStateService {
         this.routeOuterPoints.set(outer);
     }
 
+    setPairRoutes(route: PairPathStatisticsInterface) {
+        this.pairRoutes.set(route);
+        const main: Set<string> = new Set<string>();
+        const outer: Set<string> = new Set<string>();
+        for (const point of route.first.points) {
+            if (point.role === 'outer')
+                outer.add(point.id);
+            else if (point.role === 'main')
+                main.add(point.id);
+        }
+        for (const point of route.second.points) {
+            if (point.role === 'outer')
+                outer.add(point.id);
+            else if (point.role === 'main')
+                main.add(point.id);
+        }
+        this.routeMainPoints.set([...main]);
+        this.routeOuterPoints.set([...outer]);
+
+    }
+
     clearRoute() {
         this.routeResult.set([]);
         this.routeDuration.set({ network: 0, algo: 0 });
@@ -175,6 +210,7 @@ export class GraphStateService {
         this.routeOuterPoints.set([]);
         this.routeLength.set(0);
         this.routeSegmentsLength.set([]);
+        this.pairRoutes.set(null);
     }
 
     getCategoryForHouse(houseId: string): number {

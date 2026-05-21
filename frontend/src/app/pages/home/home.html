@@ -24,9 +24,13 @@
                 @if (state.editMode() === 'add-edge') {
                     <span class="toolbar-hint">
                         @if (state.edgeSourceNode()) {
-                            ✓ {{ state.houseCategories[state.edgeSourceNode()!.category]?.icon }} → вторую вершину
+
+✓ {{ state.houseCategories[state.edgeSourceNode()!.category]?.icon }} → вторую вершину
+
                         } @else {
-                            кликните первую вершину
+
+кликните первую вершину
+
                         }
                     </span>
                 }
@@ -147,7 +151,12 @@
                     }
                 </div>
             </div>
-
+        } @else if (state.pairRoutes() !== null) {
+            <div style="font-size: 12px">
+                <p style="color: #00ff73">Оба маршрута</p>
+                <p style="color: #0000ff">Первый маршрут</p>
+                <p style="color: #ff0017">Второй маршрут</p>
+            </div>
         } @else {
             <div class="panel-card panel-empty">
                 <div class="panel-empty-icon">◫</div>
@@ -182,8 +191,11 @@
             >
                 @if (state.isGenerating()) {
                     <span class="spinner spinner--sm"></span> генерация...
+
                 } @else {
-                    🎲 Сгенерировать
+
+🎲 Сгенерировать
+
                 }
             </button>
         </div>

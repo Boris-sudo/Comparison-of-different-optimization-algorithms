@@ -9,6 +9,7 @@ import { StreetInterface } from "../interfaces/street.interface";
 import * as CategoryService from './category.service';
 import * as StreetService from './street.service';
 import { DynamicAPSP } from "./path-build.service";
+import { getCategory, SINGLETON } from "./category.service";
 
 // ─── Вспомогательные типы ────────────────────────────────────────────────────
 
@@ -64,12 +65,12 @@ export const createRandomCity = async function (count?: number): Promise<Dynamic
 
     if (count === undefined) {
         for (let index = 0; index < categories_count; index++)
-            categories[index] = (index == 0 ? 1 : getRandomInt(1, 3));
+            categories[index] = (SINGLETON.has(getCategory(index).name) ? 1 : getRandomInt(1, 3));
     } else {
         while (count > 0)
             for (let index = 0; index < categories_count; index++) {
                 const cnt = Math.min(count, (index == 0 ? 1 : getRandomInt(1, 3)));
-                if (index == 0 && categories[index] == 1) continue;
+                if (SINGLETON.has(getCategory(index).name) && categories[index] == 1) continue;
                 categories[index] += cnt;
                 count -= cnt;
                 if (count === 0) break;

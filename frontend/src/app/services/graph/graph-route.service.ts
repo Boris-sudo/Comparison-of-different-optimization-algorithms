@@ -49,11 +49,13 @@ export class GraphRouteService {
         this.state.clearRoute();
 
         try {
-            return await this.routeService.compareRoutes({
+            const resp = await this.routeService.compareRoutes({
                 models: algorithms,
                 prompt: this.state.routePrompt(),
                 startPoint: this.state.houses.filter(house => house.category === 0)[0].id,
             });
+            this.state.setPairRoutes(resp);
+            return resp;
         } catch (e: any) {
             this.state.error.set(e?.message ?? 'Ошибка при построении маршрута');
         }

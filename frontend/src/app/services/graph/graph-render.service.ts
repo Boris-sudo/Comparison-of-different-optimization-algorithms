@@ -20,7 +20,8 @@ export class GraphRenderService {
     constructor(
         private state: GraphStateService,
         private ngZone: NgZone,
-    ) {}
+    ) {
+    }
 
     // ─── Init ─────────────────────────────────────────────────────────────────
 
@@ -377,42 +378,94 @@ export class GraphRenderService {
             const isOuter = outerIndex >= 0;
             const hue = inRoute ? (routeIndex * 360) / Math.max(this.state.routeMainPoints().length, 1) : 0;
 
+            if (this.state.pairRoutes() === null) {
+                node.select('.node-circle')
+                    .attr('fill',
+                        isSelected ? '#4c1d95' :
+                            isEdgeSource ? '#064e3b' :
+                                inRoute ? `hsl(${ hue }, 60%, 18%)` :
+                                    isOuter ? '#282830' : '#0f0f23'
+                    )
+                    .attr('stroke',
+                        isSelected ? '#8b5cf6' :
+                            isEdgeSource ? '#10b981' :
+                                inRoute ? `hsl(${ hue }, 70%, 55%)` :
+                                    isOuter ? '#6e6e70' : '#3b3b6b'
+                    )
+
+                node.select('.node-glow')
+                    .attr('stroke',
+                        isSelected ? '#8b5cf6' :
+                            isEdgeSource ? '#10b981' :
+                                inRoute ? `hsl(${ hue }, 70%, 55%)` : 'transparent'
+                    )
+
+                if (inRoute)
+                    node.append('text')
+                        .attr('fill', `hsl(${ hue }, 70%, 70%)`)
+                        .text(routeIndex + 1);
+            } else {
+                const firstRouteMainPoints = this.state.pairRoutes()!.first.points.filter(p => p.role === 'main').map(p => p.id);
+                const secondRouteMainPoints = this.state.pairRoutes()!.second.points.filter(p => p.role === 'main').map(p => p.id);
+                const firstIndex = firstRouteMainPoints.indexOf(d.id);
+                const secondIndex = secondRouteMainPoints.indexOf(d.id);
+                const isInFirst = firstIndex >= 0;
+                const isInSecond = secondIndex >= 0;
+
+                node.select('.node-circle')
+                    .attr('fill',
+                        isSelected ? '#4c1d95' :
+                            isEdgeSource ? '#064e3b' :
+                                isInSecond && isInFirst ? `#00ff73` :
+                                    isInFirst ? '#0000ff' :
+                                        isInSecond ? `#ff0017` :
+                                            isOuter ? `#282830` : '#0f0f23'
+                    )
+                    .attr('stroke',
+                        isSelected ? '#8b5cf6' :
+                            isEdgeSource ? '#10b981' :
+                                isInSecond && isInFirst ? `#00ff73` :
+                                    isInFirst ? '#0000ff' :
+                                        isInSecond ? `#ff0017` :
+                                            isOuter ? '#6e6e70' : '#3b3b6b'
+                    )
+
+                node.select('.node-glow')
+                    .attr('stroke',
+                        isSelected ? '#8b5cf6' :
+                            isEdgeSource ? '#10b981' :
+                                isInSecond && isInFirst ? `#00ff73` :
+                                    isInFirst ? '#0000ff' :
+                                        isInSecond ? `#ff0017` : 'transparent'
+                    )
+
+                if (inRoute)
+                    node.append('text')
+                        .attr('fill',
+                            isInSecond && isInFirst ? `#00ff73` :
+                                isInFirst ? '#0000ff' : `#ff0017`
+                        )
+                        .text(Math.max(firstIndex, secondIndex));
+            }
+
             node.select('.node-circle')
                 .transition().duration(200)
-                .attr('fill',
-                    isSelected ? '#4c1d95' :
-                        isEdgeSource ? '#064e3b' :
-                            inRoute ? `hsl(${ hue }, 60%, 18%)` :
-                                isOuter ? '#282830' : '#0f0f23'
-                )
-                .attr('stroke',
-                    isSelected ? '#8b5cf6' :
-                        isEdgeSource ? '#10b981' :
-                            inRoute ? `hsl(${ hue }, 70%, 55%)` :
-                                isOuter ? '#6e6e70' : '#3b3b6b'
-                )
                 .attr('stroke-width', isSelected || isEdgeSource || inRoute ? 2.5 : 2)
                 .attr('r', isSelected || isEdgeSource ? 26 : 22);
 
             node.select('.node-glow')
                 .transition().duration(200)
-                .attr('stroke',
-                    isSelected ? '#8b5cf6' :
-                        isEdgeSource ? '#10b981' :
-                            inRoute ? `hsl(${ hue }, 70%, 55%)` : 'transparent'
-                )
                 .attr('stroke-opacity', isSelected || isEdgeSource || inRoute ? 0.35 : 0);
 
             node.select('.route-index').remove();
+
             if (inRoute) {
                 node.append('text')
                     .attr('class', 'route-index')
                     .attr('text-anchor', 'middle')
                     .attr('y', -30)
-                    .attr('fill', `hsl(${ hue }, 70%, 70%)`)
                     .attr('font-size', '10px')
                     .attr('font-weight', '700')
-                    .text(routeIndex + 1);
             }
         });
     }
@@ -426,34 +479,66 @@ export class GraphRenderService {
             const tgt = (d.target as D3Node).id;
             const isSelected = d.id === this.state.selectedStreet()?.id;
 
-            let segIdx = -1;
-            const routeResult = this.state.routeResult();
-            for (let j = 0; j < routeResult.length - 1; j++) {
-                const a = routeResult[j].id, b = routeResult[j + 1].id;
-                if ((src === a && tgt === b) || (src === b && tgt === a)) {
-                    let l = j;
-                    while (routeResult[l].role !== 'main') l--;
-                    const mainPoints = this.state.routeMainPoints();
-                    for (let k = 0; k < mainPoints.length - 1; k++) {
-                        if (mainPoints[k] === routeResult[l].id) {
-                            segIdx = k;
-                            break;
+            if (this.state.pairRoutes() === null) {
+                let segIdx = -1;
+                const routeResult = this.state.routeResult();
+                for (let j = 0; j < routeResult.length - 1; j++) {
+                    const a = routeResult[j].id, b = routeResult[j + 1].id;
+                    if ((src === a && tgt === b) || (src === b && tgt === a)) {
+                        let l = j;
+                        while (routeResult[l].role !== 'main') l--;
+                        const mainPoints = this.state.routeMainPoints();
+                        for (let k = 0; k < mainPoints.length - 1; k++) {
+                            if (mainPoints[k] === routeResult[l].id) {
+                                segIdx = k;
+                                break;
+                            }
                         }
+                        break;
                     }
-                    break;
                 }
+
+                const inRoute = segIdx >= 0;
+                const hue = inRoute ? (segIdx * 360) / Math.max(this.state.routeMainPoints().length, 1) : 0;
+
+                link.transition().duration(200)
+                    .attr('stroke',
+                        isSelected ? '#f59e0b' :
+                            inRoute ? `hsl(${ hue }, 70%, 55%)` : '#2d2d4e'
+                    )
+                    // .attr('stroke-width', isSelected ? 4 : inRoute ? 3 : 1.5)
+                    .attr('stroke-opacity', isSelected ? 1 : inRoute ? 1 : 0.7);
+            } else {
+                let isInFirst = false;
+                let isInSecond = false;
+
+                let route = this.state.pairRoutes()?.first.points!;
+                for (let j = 0; j < route.length - 1; j++) {
+                    const a = route[j].id, b = route[j + 1].id;
+                    if ((src === a && tgt === b) || (src === b && tgt === a)) {
+                        isInFirst = true;
+                        break;
+                    }
+                }
+
+                route = this.state.pairRoutes()?.second.points!;
+                for (let j = 0; j < route.length - 1; j++) {
+                    const a = route[j].id, b = route[j + 1].id;
+                    if ((src === a && tgt === b) || (src === b && tgt === a)) {
+                        isInSecond = true;
+                        break;
+                    }
+                }
+
+                link.transition().duration(200)
+                    .attr('stroke',
+                        isSelected ? '#f59e0b' :
+                            isInFirst && isInSecond ? `#00ff73` :
+                                isInFirst ? '#0000ff' :
+                                    isInSecond ? `#ff0017` : `#2d2d4e`
+                    )
+                    .attr('stroke-opacity', isSelected ? 1 : isInSecond || isInSecond ? 1 : 0.7);
             }
-
-            const inRoute = segIdx >= 0;
-            const hue = inRoute ? (segIdx * 360) / Math.max(this.state.routeMainPoints().length, 1) : 0;
-
-            link.transition().duration(200)
-                .attr('stroke',
-                    isSelected ? '#f59e0b' :
-                        inRoute ? `hsl(${ hue }, 70%, 55%)` : '#2d2d4e'
-                )
-                // .attr('stroke-width', isSelected ? 4 : inRoute ? 3 : 1.5)
-                .attr('stroke-opacity', isSelected ? 1 : inRoute ? 1 : 0.7);
         });
     }
 }

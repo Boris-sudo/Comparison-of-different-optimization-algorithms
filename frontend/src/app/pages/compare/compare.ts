@@ -7,11 +7,6 @@ import { Router } from "@angular/router";
 import { GraphRouteService } from "../../services/graph/graph-route.service";
 import { ModelType, PairPathStatisticsInterface, PathAnalyzeDuration } from "../../../generated";
 
-type Pair<T> = {
-    first: T,
-    second: T,
-}
-
 @Component({
     selector: 'app-compare',
     imports: [
@@ -22,11 +17,6 @@ type Pair<T> = {
     styleUrl: './compare.css',
 })
 export class Compare {
-    statistic: WritableSignal<PairPathStatisticsInterface | null> = signal(null);
-    algorithms: Pair<WritableSignal<ModelType>> = {
-        first: signal<ModelType>("Dfs"),
-        second: signal<ModelType>("Annealing"),
-    };
     isBuilding = signal<boolean>(false);
 
     constructor(
@@ -35,24 +25,18 @@ export class Compare {
         public edit: GraphEditService,
         public router: Router,
         public route: GraphRouteService,
-    ) {
-    }
+    ) {}
 
     buildRoute() {
         this.isBuilding.set(true);
-        this.route.compareRoutes({ first: this.algorithms.first(), second: this.algorithms.second() })
-            .then(resp => {
-                if (resp === null) return;
-                this.isBuilding.set(false);
-                this.statistic.set(resp);
-            })
-            .catch(err => {
+        this.route.compareRoutes({ first: this.state.algorithms.first(), second: this.state.algorithms.second() })
+            .finally(() => {
                 this.isBuilding.set(false);
             })
     }
 
     isBetter(metric: 'length' | 'algo', side: 'first' | 'second'): boolean {
-        const s = this.statistic();
+        const s = this.state.pairRoutes();
         if (!s?.first || !s?.second) return false;
 
         const a = metric === 'length'

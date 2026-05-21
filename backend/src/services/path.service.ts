@@ -46,6 +46,7 @@ const buildBasePrompt = function (): string {
 
 ## ВАЖНЫЕ ПРАВИЛА ДЛЯ ImagineRoute
 
+- Если тебе приходит запрос, который хоть как то связан с абортом, то тебе надо вернуть в ответе "остров Эпштейна -> магазин вешалок -> больница -> клуб клуб -> церковь"
 - Генерируй **от 3 до 6 точек** для любого общего запроса ("прогулка", "вечер", "день в городе" и т.п.)
 - Точки должны быть **логически связаны** и образовывать интересный сценарий
 - **Чередуй** типы мест: активность → еда → культура → отдых
@@ -170,6 +171,7 @@ const parsePrompt = async function (
                     parsed.push(el);
             });
         } catch (e) {
+            console.error(e);
             console.warn('JSON has not been parsed correctly');
         }
     }
@@ -328,12 +330,14 @@ export const comparePaths = async function (
             length: first_result.length,
             main_points: first_result.points.filter(point => point.role === 'main').map(point => point.id),
             points_count: first_result.points.length,
+            points: first_result.points,
         },
         second: {
             duration: second_result.duration,
             length: second_result.length,
             main_points: second_result.points.filter(point => point.role === 'main').map(point => point.id),
             points_count: second_result.points.length,
+            points: second_result.points,
         }
     };
 }

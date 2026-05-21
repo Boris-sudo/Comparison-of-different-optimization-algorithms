@@ -33,6 +33,7 @@ export interface PathStatisticsInterface {
     length: number;
     main_points: string[];
     points_count: number,
+    points: PathResultItem[]
 }
 
 export interface PathResultItem {

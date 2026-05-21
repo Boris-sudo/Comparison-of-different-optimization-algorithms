@@ -17,8 +17,8 @@
                     @for (algo of state.availableAlgorithms; track algo.id) {
                         <button
                                 class="algo-card"
-                                [class.algo-card--active]="algorithms.first() === algo.id"
-                                (click)="algorithms.first.set(algo.id)"
+                                [class.algo-card--active]="state.algorithms.first() === algo.id"
+                                (click)="state.algorithms.first.set(algo.id)"
                         >
                             <span class="algo-card-name">{{ algo.name }}</span>
                             <span class="algo-card-desc">{{ algo.description }}</span>
@@ -37,8 +37,8 @@
                     @for (algo of state.availableAlgorithms; track algo.id) {
                         <button
                                 class="algo-card"
-                                [class.algo-card--active]="algorithms.second() === algo.id"
-                                (click)="algorithms.second.set(algo.id)"
+                                [class.algo-card--active]="state.algorithms.second() === algo.id"
+                                (click)="state.algorithms.second.set(algo.id)"
                         >
                             <span class="algo-card-name">{{ algo.name }}</span>
                             <span class="algo-card-desc">{{ algo.description }}</span>
@@ -64,7 +64,7 @@
             <div class="error-box">{{ state.error() }}</div>
         }
 
-        @if (statistic()) {
+        @if (state.pairRoutes()) {
             <div class="stats-block">
                 <div class="stats-header">
                     <span class="stats-title">результаты сравнения</span>
@@ -82,11 +82,11 @@
                             <th class="metric-col">Метрика</th>
                             <th class="algo-col algo-col--a">
                                 <span class="algo-badge algo-badge--a">A</span>
-                                {{ algorithms.first() }}
+                                {{ state.algorithms.first() }}
                             </th>
                             <th class="algo-col algo-col--b">
                                 <span class="algo-badge algo-badge--b">B</span>
-                                {{ algorithms.second() }}
+                                {{ state.algorithms.second() }}
                             </th>
                         </tr>
                     </thead>
@@ -96,42 +96,42 @@
                             <td class="stats-val"
                                 [class.compare-best]="isBetter('length', 'first')"
                                 [class.compare-worst]="isBetter('length', 'second')">
-                                {{ statistic()?.first?.length ?? '—' }}
+                                {{ state.pairRoutes()?.first?.length ?? '—' }}
                             </td>
                             <td class="stats-val"
                                 [class.compare-best]="isBetter('length', 'second')"
                                 [class.compare-worst]="isBetter('length', 'first')">
-                                {{ statistic()?.second?.length ?? '—' }}
+                                {{ state.pairRoutes()?.second?.length ?? '—' }}
                             </td>
                         </tr>
                         <tr>
                             <td class="metric-name">Всего точек</td>
-                            <td class="stats-val">{{ statistic()?.first?.points_count ?? '—' }}</td>
-                            <td class="stats-val">{{ statistic()?.second?.points_count ?? '—' }}</td>
+                            <td class="stats-val">{{ state.pairRoutes()?.first?.points_count ?? '—' }}</td>
+                            <td class="stats-val">{{ state.pairRoutes()?.second?.points_count ?? '—' }}</td>
                         </tr>
                         <tr>
                             <td class="metric-name">Время алгоритма</td>
                             <td class="stats-val"
                                 [class.compare-best]="isBetter('algo', 'first')"
                                 [class.compare-worst]="isBetter('algo', 'second')">
-                                {{ statistic()?.first?.duration?.algo ?? '—' }} ms
+                                {{ state.pairRoutes()?.first?.duration?.algo ?? '—' }} ms
                             </td>
                             <td class="stats-val"
                                 [class.compare-best]="isBetter('algo', 'second')"
                                 [class.compare-worst]="isBetter('algo', 'first')">
-                                {{ statistic()?.second?.duration?.algo ?? '—' }} ms
+                                {{ state.pairRoutes()?.second?.duration?.algo ?? '—' }} ms
                             </td>
                         </tr>
                         <tr>
                             <td class="metric-name">Время LLM</td>
-                            <td class="stats-val">{{ statistic()?.first?.duration?.network ?? '—' }} ms</td>
-                            <td class="stats-val">{{ statistic()?.second?.duration?.network ?? '—' }} ms</td>
+                            <td class="stats-val">{{ state.pairRoutes()?.first?.duration?.network ?? '—' }} ms</td>
+                            <td class="stats-val">{{ state.pairRoutes()?.second?.duration?.network ?? '—' }} ms</td>
                         </tr>
                         <tr class="route-row">
                             <td class="metric-name">Маршрут</td>
                             <td class="stats-val route-cell">
                                 <div class="route-chips">
-                                    @for (pointId of statistic()?.first?.main_points || []; track pointId; let last = $last) {
+                                    @for (pointId of state.pairRoutes()?.first?.main_points || []; track pointId; let last = $last) {
                                         <span class="route-chip">
                                             {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.icon || '📍' }}
                                         </span>
@@ -141,7 +141,7 @@
                             </td>
                             <td class="stats-val route-cell">
                                 <div class="route-chips">
-                                    @for (pointId of statistic()?.second?.main_points || []; track pointId; let last = $last) {
+                                    @for (pointId of state.pairRoutes()?.second?.main_points || []; track pointId; let last = $last) {
                                         <span class="route-chip">
                                             {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.icon || '📍' }}
                                         </span>
