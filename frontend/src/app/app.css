@@ -556,6 +556,7 @@ html, body {
     padding: 0.35rem 0.4rem;
     border-radius: var(--radius-sm);
     transition: var(--transition);
+    cursor: pointer;
 }
 
 .route-list-item:hover {
