@@ -50,4 +50,21 @@ export class Compare {
                 this.isBuilding.set(false);
             })
     }
+
+    isBetter(metric: 'length' | 'algo', side: 'first' | 'second'): boolean {
+        const s = this.statistic();
+        if (!s?.first || !s?.second) return false;
+
+        const a = metric === 'length'
+            ? s.first.length
+            : s.first.duration?.algo ?? Infinity;
+
+        const b = metric === 'length'
+            ? s.second.length
+            : s.second.duration?.algo ?? Infinity;
+
+        if (a === b) return false;
+
+        return side === 'first' ? a < b : b < a;
+    }
 }

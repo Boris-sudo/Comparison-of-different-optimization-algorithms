@@ -1,58 +1,109 @@
 @import "../../app.css";
 
-.stats-block {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
+.compare-algo-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    align-items: start;
+    margin-bottom: 0.5rem;
 }
 
-.stats-header {
+.compare-algo-col { display: flex; flex-direction: column; }
+
+.compare-divider {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
+    justify-content: center;
+    padding-top: 2.6rem;
 }
 
-.stats-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.stats-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.82rem;
-}
-
-.stats-table th {
-    text-align: left;
-    padding: 0.4rem 0.6rem;
+.compare-divider span {
+    font-family: var(--ff-mono);
+    font-size: 0.7rem;
     color: var(--text-muted);
-    font-weight: 500;
-    border-bottom: 1px solid var(--border);
+    background: var(--bg-overlay);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.2rem 0.4rem;
+    letter-spacing: 0.05em;
+}
+
+/* ── Compare table extras ────────────────────────────────── */
+.compare-table .metric-col {
+    width: 30%;
+    color: var(--text-muted);
+    font-family: var(--ff-mono);
+    font-size: 0.62rem;
     text-transform: uppercase;
-    font-size: 0.72rem;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.08em;
 }
 
-.stats-table td {
-    padding: 0.45rem 0.6rem;
+.compare-table .algo-col {
+    text-align: center;
+    font-family: var(--ff-mono);
+    font-size: 0.65rem;
     color: var(--text-secondary);
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    letter-spacing: 0.03em;
 }
 
-.stats-table tr:last-child td {
-    border-bottom: none;
+.compare-table .metric-name {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    text-align: left;
 }
 
-.stats-val {
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-    color: var(--text-primary) !important;
-    font-weight: 500;
+.algo-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    margin-right: 0.25rem;
+    font-family: var(--ff-mono);
 }
 
-.stats-table tr:hover td {
-    background: rgba(139, 92, 246, 0.04);
+.algo-badge--a {
+    background: rgba(61,142,240,0.2);
+    color: var(--accent);
+    border: 1px solid rgba(61,142,240,0.3);
+}
+
+.algo-badge--b {
+    background: rgba(245,158,11,0.15);
+    color: var(--amber);
+    border: 1px solid rgba(245,158,11,0.25);
+}
+
+.route-row td { padding-top: 0.6rem; padding-bottom: 0.6rem; }
+
+.route-cell {
+    text-align: left !important;
+    vertical-align: top;
+}
+
+/* ── Legend ──────────────────────────────────────────────── */
+.compare-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.legend-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-dot--green { background: var(--green); }
+.legend-dot--red   { background: var(--red); }
+
+.legend-text {
+    font-family: var(--ff-mono);
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    margin-right: 0.4rem;
 }

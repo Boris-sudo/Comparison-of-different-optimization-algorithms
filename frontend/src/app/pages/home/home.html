@@ -5,20 +5,17 @@
             <div class="toolbar-tools">
                 <button class="tool-btn"
                         [class.active]="state.editMode() === 'select'"
-                        (click)="setEditMode('select')"
-                        title="Выбор">
+                        (click)="setEditMode('select')">
                     <span>↖</span> Выбор
                 </button>
                 <button class="tool-btn"
                         [class.active]="state.editMode() === 'add-node'"
-                        (click)="setEditMode('add-node')"
-                        title="Добавить вершину">
+                        (click)="setEditMode('add-node')">
                     <span>＋</span> Вершина
                 </button>
                 <button class="tool-btn"
                         [class.active]="state.editMode() === 'add-edge'"
-                        (click)="setEditMode('add-edge')"
-                        title="Добавить ребро">
+                        (click)="setEditMode('add-edge')">
                     <span>⟵</span> Ребро
                 </button>
             </div>
@@ -27,23 +24,18 @@
                 @if (state.editMode() === 'add-edge') {
                     <span class="toolbar-hint">
                         @if (state.edgeSourceNode()) {
-
-✓ {{ state.houseCategories[state.edgeSourceNode()!.category]?.icon }}
-                            → кликните вторую вершину
-
+                            ✓ {{ state.houseCategories[state.edgeSourceNode()!.category]?.icon }} → вторую вершину
                         } @else {
-
-Кликните первую вершину
-
+                            кликните первую вершину
                         }
                     </span>
                 }
                 @if (state.editMode() === 'add-node') {
-                    <span class="toolbar-hint">Кликните по пустому месту</span>
+                    <span class="toolbar-hint">кликните по пустому месту</span>
                 }
                 @if (state.hasRoute()) {
                     <button class="tool-btn tool-btn--clear" (click)="route.clearRoute()">
-                        ✕ Сбросить маршрут
+                        ✕ сбросить маршрут
                     </button>
                 }
             </div>
@@ -52,20 +44,19 @@
         <svg #graphSvg class="graph-svg"></svg>
     </div>
 
-    <!-- Side panel -->
     <div class="side-panel">
 
         @if (state.selectedHouse()) {
             <div class="panel-card">
                 <div class="panel-card-header">
-                    <span class="panel-icon">
+                    <div class="panel-icon">
                         {{ state.houseCategories[state.selectedHouse()!.category]?.icon }}
-                    </span>
+                    </div>
                     <div>
                         <div class="panel-card-title">
                             {{ state.houseCategories[state.selectedHouse()!.category]?.name }}
                         </div>
-                        <div class="panel-card-sub">Редактирование вершины</div>
+                        <div class="panel-card-sub">// редактирование вершины</div>
                     </div>
                 </div>
 
@@ -97,7 +88,7 @@
         } @else if (state.selectedStreet()) {
             <div class="panel-card">
                 <div class="panel-card-header">
-                    <span class="panel-icon">🛣️</span>
+                    <div class="panel-icon">🛣️</div>
                     <div>
                         <div class="panel-card-title">Ребро</div>
                         <div class="panel-card-sub">
@@ -116,7 +107,7 @@
                         placeholder="Длина ребра"
                 />
 
-                <div class="panel-actions" style="margin-top: 1rem">
+                <div class="panel-actions" style="margin-top:0.75rem">
                     <button class="action-btn action-btn--primary" (click)="saveStreetLength()">
                         💾 Сохранить
                     </button>
@@ -125,21 +116,23 @@
                     </button>
                     <button class="action-btn action-btn--ghost"
                             (click)="state.selectedStreet.set(null); render.updateLinkStyles()">
-                        Отмена
+                        ✕
                     </button>
                 </div>
             </div>
 
         } @else if (state.hasRoute()) {
             <div class="panel-card">
-                <div class="panel-card-title" style="margin-bottom: 1rem">
-                    Маршрут · {{ state.routeMainPoints().length }} точек
+                <div class="panel-card-header">
+                    <div class="panel-icon">◎</div>
+                    <div>
+                        <div class="panel-card-title">Маршрут</div>
+                        <div class="panel-card-sub">{{ state.routeMainPoints().length }} точек</div>
+                    </div>
                 </div>
                 <div class="route-list">
                     @for (pointId of state.routeMainPoints(); track pointId; let i = $index; let last = $last) {
-                        <div class="route-list-item"
-                             (click)="focusNode(pointId)"
-                             style="cursor: pointer">
+                        <div class="route-list-item" (click)="focusNode(pointId)">
                             <div class="route-num">{{ i + 1 }}</div>
                             <span class="route-list-icon">
                                 {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.icon || '📍' }}
@@ -157,44 +150,40 @@
 
         } @else {
             <div class="panel-card panel-empty">
-                <div class="panel-empty-icon">⬡</div>
+                <div class="panel-empty-icon">◫</div>
                 <p>Выберите вершину<br>для редактирования</p>
             </div>
         }
 
-        <!-- Generate city -->
-        <div class="panel-card" style="margin-top: 1rem">
+        <div class="panel-card">
             <div class="panel-card-header">
-                <span class="panel-icon">🏙️</span>
+                <div class="panel-icon">🏙️</div>
                 <div>
                     <div class="panel-card-title">Новый граф</div>
-                    <div class="panel-card-sub">Сгенерировать случайный город</div>
+                    <div class="panel-card-sub">// генерация города</div>
                 </div>
             </div>
 
-            <div class="panel-section-label">Количество вершин (необязательно)</div>
+            <div class="panel-section-label">Число вершин</div>
             <input
                     class="field-input"
                     type="number"
                     [(ngModel)]="state.newCityNodeCount"
-                    placeholder="Случайное количество"
+                    placeholder="случайное"
                     min="3"
-                    max="50"
+                    max="1000"
             />
 
             <button
                     class="action-btn action-btn--primary"
-                    style="width: 100%; margin-top: 1rem; justify-content: center"
+                    style="width:100%; margin-top:0.75rem"
                     (click)="generateCity()"
                     [disabled]="state.isGenerating()"
             >
                 @if (state.isGenerating()) {
-                    <span class="spinner spinner--sm"></span> Генерация...
-
+                    <span class="spinner spinner--sm"></span> генерация...
                 } @else {
-
-🎲 Сгенерировать
-
+                    🎲 Сгенерировать
                 }
             </button>
         </div>
