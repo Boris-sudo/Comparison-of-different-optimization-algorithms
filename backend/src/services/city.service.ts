@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { getRandomInt } from "../utils/utils";
+import { getRandomInt, Queue } from "../utils/utils";
 
 import { CityInterface, MappedCityInterface, RedisCityInterface } from "../interfaces/city.interface";
 import { InternalServerError } from '../utils/errors';
@@ -69,7 +69,7 @@ export const createRandomCity = async function (count?: number): Promise<Dynamic
     } else {
         while (count > 0)
             for (let index = 0; index < categories_count; index++) {
-                const cnt = Math.min(count, (index == 0 ? 1 : getRandomInt(1, 3)));
+                const cnt = Math.min(count, (SINGLETON.has(getCategory(index).name) ? 1 : getRandomInt(1, 3)));
                 if (SINGLETON.has(getCategory(index).name) && categories[index] == 1) continue;
                 categories[index] += cnt;
                 count -= cnt;
@@ -111,7 +111,7 @@ const generateCityByCategories = async function (
         }
     }
 
-    createCityLikeEdges(city.houses, city.streetIndex);
+    createCityLikeEdges(city.houses, city.streetIndex, city.houseIndex);
 
     return new DynamicAPSP(city);
 }
@@ -120,6 +120,7 @@ const generateCityByCategories = async function (
 const createCityLikeEdges = function (
     houses: HouseInterface[],
     streetIndex: Map<string, StreetInterface>,
+    houseIndex: Map<string, HouseInterface>,
 ): void {
     const n = houses.length;
     if (n === 0) return;
@@ -136,7 +137,7 @@ const createCityLikeEdges = function (
         StreetService.addEdge(houseA, houseB, streetIndex);
     }
 
-    pruneEdges(houses, streetIndex);
+    pruneEdges(houses, streetIndex, houseIndex);
     ensureConnected(houses, streetIndex, points);
     addExtraEdges(houses, streetIndex, points);
 }
@@ -237,14 +238,24 @@ const bowierWatson = function (points: Point2D[]): Triangle[] {
 /** Проверка — лежит ли точка внутри описанной окружности треугольника **/
 const inCircumcircle = function (p: Point2D, tri: Triangle): boolean {
     const { a, b, c } = tri;
-    const ax = a.x - p.x, ay = a.y - p.y;
-    const bx = b.x - p.x, by = b.y - p.y;
-    const cx = c.x - p.x, cy = c.y - p.y;
+
+    const ax = a.x - p.x;
+    const ay = a.y - p.y;
+    const bx = b.x - p.x;
+    const by = b.y - p.y;
+    const cx = c.x - p.x;
+    const cy = c.y - p.y;
+
     const det =
-        ax * (by * (cx * cx + cy * cy) - cy * (bx * bx + by * by)) -
-        ay * (bx * (cx * cx + cy * cy) - cx * (bx * bx + by * by)) +
-        (ax * ax + ay * ay) * (bx * cy - by * cx);
-    return det > 0;
+        (ax * ax + ay * ay) * (bx * cy - by * cx) -
+        (bx * bx + by * by) * (ax * cy - ay * cx) +
+        (cx * cx + cy * cy) * (ax * by - ay * bx);
+
+    // Знак зависит от ориентации треугольника
+    // Если вершины против часовой стрелки — det > 0 означает внутри
+    const cross = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+
+    return cross > 0 ? det > 0 : det < 0;
 }
 
 /** Проверка наличия ребра в треугольнике **/
@@ -280,8 +291,10 @@ const extractEdges = function (triangles: Triangle[]): [Point2D, Point2D][] {
 const pruneEdges = function (
     houses: HouseInterface[],
     streetIndex: Map<string, StreetInterface>,
+    houseIndex: Map<string, HouseInterface>
 ): void {
     const MAX_DEGREE = 5; // максимум улиц у одного здания
+    const MAX_DIST = 4;
     // todo сделать проверку что если при удалении ребра, путь между вершинами длинны <= 5 не существует, то реально удалять ребро
 
     for (const house of houses) {
@@ -306,6 +319,49 @@ const pruneEdges = function (
             const revIdx = toHouse.edges.indexOf(revEdge);
             if (revIdx !== -1) { toHouse.edges[revIdx] = toHouse.edges[toHouse.edges.length - 1]; toHouse.edges.pop(); }
             streetIndex.delete(revId);
+        }
+    }
+
+    for (const house of houses) {
+        for (const edge of house.edges) {
+            const id = edge.id;
+            const revId = edge.id.split(':').reverse().join(':');
+            const toHouseId = edge.id.split(':').filter(id => id !== house.id)[0];
+            const bannedEdges = new Set<string>([id, revId]);
+
+            const dist = new Map<string, number>();
+            const queue = new Queue<string>();
+            let found = false;
+            dist.set(house.id, 0);
+            queue.add(house.id);
+
+            while (!queue.isEmpty()) {
+                const houseId = queue.get()!;
+                if (dist.has(toHouseId)) {
+                    found = true;
+                    break;
+                }
+
+                const house = houseIndex.get(houseId)!;
+                const deep = dist.get(houseId)!;
+                if (deep > MAX_DIST) break;
+                for (const edge of house.edges) {
+                    if (bannedEdges.has(edge.id)) continue;
+                    if (!dist.has(edge.to)) {
+                        dist.set(edge.to, deep + 1);
+                        queue.add(edge.to);
+                    }
+                }
+            }
+
+            if (found) {
+                streetIndex.delete(id);
+                streetIndex.delete(revId);
+                house.edges.filter(edge => edge.id != id);
+
+                const toHouse = houseIndex.get(toHouseId)!;
+                toHouse.edges.filter(edge => edge.id != revId);
+            }
         }
     }
 }

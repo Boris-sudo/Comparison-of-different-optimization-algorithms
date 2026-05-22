@@ -90,7 +90,7 @@ export class GraphRenderService {
             .force('link', d3.forceLink<D3Node, D3Link>(this.state.d3Links)
                 .id(d => d.id)
                 .distance(130)
-                .strength(0.3)
+                .strength(0)
             )
             .force('charge', d3.forceManyBody()
                 .strength(d => connectedIds.has((d as D3Node).id) ? -400 : -80)
