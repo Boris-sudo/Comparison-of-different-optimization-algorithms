@@ -1,13 +1,14 @@
 import * as koa from 'koa';
 import { Controller } from "@tsoa/runtime";
-import { OperationId, Post, Response, Route, Security, Tags, Request, Body } from "tsoa";
+import { Body, OperationId, Post, Request, Response, Route, Security, Tags } from "tsoa";
 
 import {
     ComparePathCreateInterface,
     ComparePathPostInterface,
     PathCreateInterface,
     PathPostInterface,
-    PathResponseInterface, PathStatisticsInterface
+    PathResponseInterface,
+    PathStatisticsInterface
 } from "../interfaces/path.interface";
 import { InternalServerError } from "../utils/errors";
 
@@ -36,9 +37,7 @@ export class PathController extends Controller {
             startPoint: start
         }
 
-        const path = await PathService.createPath(apsp, prompt);
-
-        return path;
+        return await PathService.createPath(apsp, prompt);
     }
 
     @Post("comparePath")
@@ -60,8 +59,6 @@ export class PathController extends Controller {
             startPoint: start
         }
 
-        const path = await PathService.comparePaths(apsp, prompt);
-
-        return path;
+        return await PathService.comparePaths(apsp, prompt);
     }
 }

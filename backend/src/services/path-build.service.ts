@@ -1,6 +1,5 @@
 import { MappedCityInterface } from "../interfaces/city.interface";
 import { PathResponseInterface } from "../interfaces/path.interface";
-import { HouseInterface } from "../interfaces/house.interface";
 
 /** Dijkstra algorithm for fast search of path between two points **/
 export function dijkstra(

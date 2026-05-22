@@ -1,7 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import * as d3 from 'd3';
 import { GraphStateService, D3Node, D3Link } from './graph-state.service';
-import { ProfileApiService } from "../api/profile.api";
 
 @Injectable({ providedIn: 'root' })
 export class GraphRenderService {
@@ -118,7 +117,7 @@ export class GraphRenderService {
         const n = this.state.d3Nodes.length;
 
         const padding = 80;
-        let multi = 1;
+        let multi;
         if (n < 100) multi = 2;
         else if (n < 250) multi = n / 70;
         else if (n < 500) multi = n / 100;
@@ -135,7 +134,7 @@ export class GraphRenderService {
         for (const node of this.state.d3Nodes) {
             node.x = offsetX + ((node.house.x ?? 0) - minX) * scale;
             node.y = offsetY + ((node.house.y ?? 0) - minY) * scale;
-            // Слегка фиксируем — симуляция может чуть двигать но не далеко
+            // Слегка фиксируем — симуляция может чуть двигать, но не далеко
             node.fx = node.x;
             node.fy = node.y;
         }

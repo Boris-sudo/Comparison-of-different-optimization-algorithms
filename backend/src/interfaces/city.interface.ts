@@ -19,10 +19,6 @@ export interface CityInterface {
     houses: Array<HouseInterface>;
 }
 
-export interface CityPostInterface {
-    houses: Array<HouseInterface>;
-}
-
 export interface CityModelInterface {
     count: number;
 }

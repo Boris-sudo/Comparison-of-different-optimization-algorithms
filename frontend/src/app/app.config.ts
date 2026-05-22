@@ -2,11 +2,11 @@ import { APP_INITIALIZER, ApplicationConfig, provideBrowserGlobalErrorListeners 
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { provideHttpClient, withInterceptors } from "@angular/common/http";
+import { provideHttpClient } from "@angular/common/http";
 import { ProfileApiService } from "./services/api/profile.api";
 
 export function initAuth(userService: ProfileApiService) {
-    userService.getProfile();
+    userService.getProfile().then();
     return () => null;
 }
 

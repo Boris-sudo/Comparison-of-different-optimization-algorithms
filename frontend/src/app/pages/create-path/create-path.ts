@@ -1,10 +1,8 @@
-import { ChangeDetectorRef, Component, effect, NgZone } from '@angular/core';
+import { Component, effect } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { ProfileApiService } from "../../services/api/profile.api";
 import { GraphStateService } from "../../services/graph/graph-state.service";
 import { GraphRenderService } from "../../services/graph/graph-render.service";
 import { GraphEditService } from "../../services/graph/graph-edit.service";
-import { RouteService } from "../../services/api/route.service";
 import { GraphRouteService } from "../../services/graph/graph-route.service";
 import { Router } from "@angular/router";
 
@@ -28,12 +26,12 @@ export class CreatePath {
         effect(() => {
             const stateTab = this.state.activeTab();
             if (stateTab === 'editor') {
-                this.router.navigate(['editor']);
+                this.router.navigate(['editor']).then();
             }
         });
     }
 
     buildRoute() {
-        this.route.buildRoute();
+        this.route.buildRoute().then();
     }
 }

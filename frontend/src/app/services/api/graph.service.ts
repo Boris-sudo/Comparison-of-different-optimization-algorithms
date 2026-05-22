@@ -4,8 +4,6 @@ import {
     UserResponse,
     HouseChangeInterface,
     StreetChangeInterface,
-    PathPostInterface,
-    PathResponseInterface,
     CityModelInterface,
 } from "../../../generated";
 import { ApiService } from "./api";
@@ -22,10 +20,6 @@ export class GraphService {
 
     async changeStreet(dto: StreetChangeInterface): Promise<UserResponse> {
         return firstValueFrom(this.apiService.api.changeStreet(dto));
-    }
-
-    async createPath(dto: PathPostInterface): Promise<PathResponseInterface> {
-        return firstValueFrom(this.apiService.api.createPath(dto));
     }
 
     async generateRandomCity(): Promise<UserResponse> {

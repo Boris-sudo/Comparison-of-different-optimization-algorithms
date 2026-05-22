@@ -186,8 +186,10 @@ export class AnnealingService {
             if (this.keys[i].type !== 'category') continue;
             let index = getRandomInt(0, this.items[i].length - 1);
             let counter = 0;
-            while (used.has(this.items[i][index].location.id) && counter < 10)
-                index = getRandomInt(0, this.items[i].length - 1), counter++;
+            while (used.has(this.items[i][index].location.id) && counter < 10) {
+                index = getRandomInt(0, this.items[i].length - 1);
+                counter++;
+            }
             result[i] = this.items[i][index];
             used.add(result[i].location.id);
         }
@@ -241,9 +243,6 @@ export class AnnealingService {
         if (distance_indicator === 0)
             throw (new InternalServerError("distance indicator is 0"));
 
-        // calculating price indicator
-        let price_indicator = 1; // TODO
-
         // calculating beauty of the path
         let beauty = 0;
         for (let index = 0; index < items.length; index++) {
@@ -276,14 +275,18 @@ export class AnnealingService {
             // generating random index of item in result to change
             let counter = 0;
             let index = getRandomInt(0, result.length - 1);
-            while (this.items[index].length === 1 && counter < 10)
-                index = getRandomInt(0, result.length - 1), counter++;
+            while (this.items[index].length === 1 && counter < 10) {
+                index = getRandomInt(0, result.length - 1);
+                counter++;
+            }
 
             // changing result[index] on other random value
             let item_index = getRandomInt(0, this.items[index].length - 1);
             counter = 0;
-            while (used.has(this.items[index][item_index].location.id) && counter < 10)
-                item_index = getRandomInt(0, this.items[index].length - 1), counter++;
+            while (used.has(this.items[index][item_index].location.id) && counter < 10) {
+                item_index = getRandomInt(0, this.items[index].length - 1);
+                counter++;
+            }
             result[index] = this.items[index][item_index];
         }
 

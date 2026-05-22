@@ -1,5 +1,4 @@
 import { HouseChangeInterface, HouseInterface } from "../interfaces/house.interface";
-import { MappedCityInterface } from "../interfaces/city.interface";
 import { InternalServerError } from "../utils/errors";
 import { DynamicAPSP } from "./path-build.service";
 
@@ -52,8 +51,7 @@ export const changeHouse = async function (
             apsp.onNodeRemoved(existing.id);
 
             const idx = city.houses.indexOf(existing);
-            const last = city.houses[city.houses.length - 1];
-            city.houses[idx] = last;
+            city.houses[idx] = city.houses[city.houses.length - 1];
             city.houses.pop();
 
             city.houseIndex.delete(house.id);

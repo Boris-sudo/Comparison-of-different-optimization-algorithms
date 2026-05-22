@@ -47,6 +47,6 @@ const server = async function () {
 };
 
 if (config.nodeEnv !== "test")
-    server();
+    server().then();
 
 export { redis };

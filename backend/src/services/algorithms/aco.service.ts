@@ -16,7 +16,9 @@ export class AcoService {
     apsp: DynamicAPSP;
     startPosition: HouseInterface;
 
-    // ─── Гиперпараметры ───────────────────────────────────────────────────────
+    /**
+     * ─── Гиперпараметры ───────────────────────────────────────────────────────
+     */
     private readonly ANTS          = 30;    // число муравьёв в колонии
     private readonly ITERATIONS    = 80;    // число итераций колонии
     private readonly ALPHA         = 1.0;   // влияние феромона
@@ -70,7 +72,7 @@ export class AcoService {
 
             // Испаряем феромон и обновляем
             this.evaporatePheromones(candidates);
-            this.depositPheromones(solutions, candidates);
+            this.depositPheromones(solutions);
         }
 
         console.log('\x1b[32m[ACO]\x1b[0m finished in', Date.now() - start, 'ms');
@@ -220,7 +222,6 @@ export class AcoService {
 
     private depositPheromones(
         solutions: AntSolution[],
-        candidates: Map<number, LocationItem[]>,
     ) {
         for (const { placement, score } of solutions) {
             if (score <= 0) continue;

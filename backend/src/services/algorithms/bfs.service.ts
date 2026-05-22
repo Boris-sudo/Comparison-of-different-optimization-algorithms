@@ -9,8 +9,8 @@ import { Queue } from "../../utils/utils";
 
 export class BfsService {
     private city: MappedCityInterface;
-    private keys: PromptElement[];
-    private startPosition: HouseInterface;
+    private readonly keys: PromptElement[];
+    private readonly startPosition: HouseInterface;
 
     private apsp: DynamicAPSP;
 

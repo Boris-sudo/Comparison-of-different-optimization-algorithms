@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, effect, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, Router } from '@angular/router';
+import { ChangeDetectorRef, Component, effect } from '@angular/core';
+import { RouterOutlet, Router } from '@angular/router';
 import { ProfileApiService } from "./services/api/profile.api";
 import { GraphEditService } from "./services/graph/graph-edit.service";
 import { GraphRenderService } from "./services/graph/graph-render.service";
@@ -48,13 +48,13 @@ export class App {
     navigate(tab: 'editor' | 'route' | 'compare') {
         this.state.activeTab.set(tab);
         this.cdr.detectChanges();
-        this.router.navigate([tab]);
+        this.router.navigate([tab]).then();
     }
 
     // ─── Register ────────────────────────────────────────────────────────────────
 
     register() {
-        this.profileApi.register();
+        this.profileApi.register().then();
     }
 
     protected readonly Math = Math;

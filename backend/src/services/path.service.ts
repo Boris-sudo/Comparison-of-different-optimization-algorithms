@@ -8,7 +8,6 @@ import {
     PathResponseInterface, PathStatisticsInterface,
     PromptElement
 } from "../interfaces/path.interface";
-import { MappedCityInterface } from "../interfaces/city.interface";
 import { AnnealingService } from "./algorithms/annealing.service";
 import { DfsService } from "./algorithms/dfs.service";
 import { buildRouteInOrder, DynamicAPSP } from "./path-build.service";
@@ -149,15 +148,10 @@ const parsePrompt = async function (
 
     while (parsed.length === 0) {
         try {
-            try {
-                prompted = await openai.chat.completions.create({
-                    messages: [{ role: "user", content: buildPrompt(prompt) }],
-                    model: "openai/gpt-oss-120b:free",
-                });
-            } catch (e) {
-                console.error(e);
-                throw e;
-            }
+            prompted = await openai.chat.completions.create({
+                messages: [{ role: "user", content: buildPrompt(prompt) }],
+                model: "openai/gpt-oss-120b:free",
+            });
 
             const messageContent = prompted.choices[0].message.content!;
             let content = JSON.parse(messageContent);

@@ -1,18 +1,15 @@
 import {
-    Component, OnInit, ViewChild, ElementRef,
+    Component, ViewChild, ElementRef,
     AfterViewInit, OnDestroy, NgZone,
     ChangeDetectorRef, ChangeDetectionStrategy, effect,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ProfileApiService } from '../../services/api/profile.api';
 import { GraphStateService } from '../../services/graph/graph-state.service';
 import { GraphRenderService } from '../../services/graph/graph-render.service';
 import { GraphEditService } from '../../services/graph/graph-edit.service';
-import { RouteService } from "../../services/api/route.service";
 import { D3Node, D3Link } from '../../services/graph/graph-state.service';
 import * as d3 from 'd3';
 import { GraphRouteService } from "../../services/graph/graph-route.service";
-import { MainPointsPipe } from "../../pipes/main-points.pipe";
 
 @Component({
     selector: 'app-home',
@@ -182,10 +179,10 @@ export class Home implements AfterViewInit, OnDestroy {
     // ─── Route Comparison ────────────────────────────────────────────────────────────────
 
     private getPointPresence(pointId: string): 'both' | 'first' | 'second' | 'none' {
-        const inFirst  = this.state.pairRoutes()?.first.main_points?.includes(pointId) ?? false;
+        const inFirst = this.state.pairRoutes()?.first.main_points?.includes(pointId) ?? false;
         const inSecond = this.state.pairRoutes()?.second?.main_points?.includes(pointId) ?? false;
         if (inFirst && inSecond) return 'both';
-        if (inFirst)  return 'first';
+        if (inFirst) return 'first';
         if (inSecond) return 'second';
         return 'none';
     }
@@ -204,10 +201,10 @@ export class Home implements AfterViewInit, OnDestroy {
     getPointAlgoLabel(pointId: string): string {
         const presence = this.getPointPresence(pointId);
         const labels = {
-            both:   '∩',
-            first:  'A',
+            both: '∩',
+            first: 'A',
             second: 'B',
-            none:   '',
+            none: '',
         };
         return labels[presence];
     }

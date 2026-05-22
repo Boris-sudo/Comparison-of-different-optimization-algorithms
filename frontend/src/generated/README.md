@@ -6,7 +6,7 @@ The version of the OpenAPI document: 1.0.0
 
 ## Building
 
-To install the required dependencies and to build the typescript sources run:
+To install the required dependencies and to build the TypeScript sources run:
 
 ```console
 npm install

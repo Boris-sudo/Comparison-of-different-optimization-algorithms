@@ -5,21 +5,11 @@ import { InternalServerError } from "../../utils/errors";
 import { getCategory } from "../category.service";
 import { DynamicAPSP } from "../path-build.service";
 
-interface AStarNode {
-    houseId: string;
-    g: number; // стоимость пути от старта
-    h: number; // эвристика до цели
-    f: number; // g + h
-    parent: string | null;
-}
-
 export class AStarService {
     keys: PromptElement[];
     city: MappedCityInterface;
     apsp: DynamicAPSP;
     startPosition: HouseInterface;
-
-    private readonly MAX_CANDIDATES = 29;
 
     constructor(
         apsp: DynamicAPSP,
@@ -125,7 +115,7 @@ export class AStarService {
                 : 0;
 
             // f = g + h, скорректированное на качество совпадения категории
-            // Делим на categoriesSum чтобы предпочитать более подходящие места
+            // Делим на categoriesSum, чтобы предпочитать более подходящие места
             const f = (g + h) / Math.max(1, categoriesSum);
 
             candidates.push({ item: { location: house, categoriesSum }, f, categoriesSum });

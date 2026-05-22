@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { GraphStateService, D3Node, D3Link } from './graph-state.service';
+import { GraphStateService, D3Node } from './graph-state.service';
 import { GraphRenderService } from './graph-render.service';
 import { GraphService } from "../api/graph.service";
 import { ProfileApiService } from '../api/profile.api';

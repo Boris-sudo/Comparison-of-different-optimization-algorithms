@@ -1,8 +1,7 @@
-import { MappedCityInterface } from "../interfaces/city.interface";
 import { StreetChangeInterface, StreetInterface } from "../interfaces/street.interface";
 import { HouseInterface } from "../interfaces/house.interface";
 import { InternalServerError } from "../utils/errors";
-import { getRandomInt, randomChoice, Queue, RandomQueue } from "../utils/utils";
+import { getRandomInt } from "../utils/utils";
 import { DynamicAPSP } from "./path-build.service";
 
 /** Parses steer id to two house ids **/

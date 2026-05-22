@@ -1,11 +1,10 @@
-import { Component, effect, signal, WritableSignal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { GraphStateService } from "../../services/graph/graph-state.service";
 import { GraphRenderService } from "../../services/graph/graph-render.service";
 import { GraphEditService } from "../../services/graph/graph-edit.service";
 import { Router } from "@angular/router";
 import { GraphRouteService } from "../../services/graph/graph-route.service";
-import { ModelType, PairPathStatisticsInterface, PathAnalyzeDuration } from "../../../generated";
 
 @Component({
     selector: 'app-compare',

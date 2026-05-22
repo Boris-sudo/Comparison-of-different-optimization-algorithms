@@ -27,9 +27,4 @@ export class RedisConfiguration {
             return null;
         }
     }
-
-    public getRedisClient() {
-        return this.client;
-    }
-
 }
