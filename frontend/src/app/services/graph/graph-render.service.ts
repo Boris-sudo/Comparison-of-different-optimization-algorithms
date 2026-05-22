@@ -416,17 +416,17 @@ export class GraphRenderService {
                     .attr('fill',
                         isSelected ? '#4c1d95' :
                             isEdgeSource ? '#064e3b' :
-                                isInSecond && isInFirst ? `#00ff73` :
-                                    isInFirst ? '#0000ff' :
-                                        isInSecond ? `#ff0017` :
+                                isInSecond && isInFirst ? this.getPointColor('both', 'bg') :
+                                    isInFirst ? this.getPointColor('first', 'bg') :
+                                        isInSecond ? this.getPointColor('second', 'bg') :
                                             isOuter ? `#282830` : '#0f0f23'
                     )
                     .attr('stroke',
                         isSelected ? '#8b5cf6' :
                             isEdgeSource ? '#10b981' :
-                                isInSecond && isInFirst ? `#00ff73` :
-                                    isInFirst ? '#0000ff' :
-                                        isInSecond ? `#ff0017` :
+                                isInSecond && isInFirst ? this.getPointColor('both', 'border') :
+                                    isInFirst ? this.getPointColor('first', 'border') :
+                                        isInSecond ? this.getPointColor('second', 'border') :
                                             isOuter ? '#6e6e70' : '#3b3b6b'
                     )
 
@@ -434,16 +434,19 @@ export class GraphRenderService {
                     .attr('stroke',
                         isSelected ? '#8b5cf6' :
                             isEdgeSource ? '#10b981' :
-                                isInSecond && isInFirst ? `#00ff73` :
-                                    isInFirst ? '#0000ff' :
-                                        isInSecond ? `#ff0017` : 'transparent'
+                                isInSecond && isInFirst ? this.getPointColor('both', 'border') :
+                                    isInFirst ? this.getPointColor('first', 'border') :
+                                        isInSecond ? this.getPointColor('second', 'border') : 'transparent'
                     )
 
                 if (inRoute)
+                    console.log(firstIndex, secondIndex);
+                if (inRoute)
                     node.append('text')
                         .attr('fill',
-                            isInSecond && isInFirst ? `#00ff73` :
-                                isInFirst ? '#0000ff' : `#ff0017`
+                            isInSecond && isInFirst ? this.getPointColor('both', "text") :
+                                isInFirst ? this.getPointColor('first', 'text') :
+                                    this.getPointColor('second', 'text')
                         )
                         .text(Math.max(firstIndex, secondIndex));
             }
@@ -533,12 +536,22 @@ export class GraphRenderService {
                 link.transition().duration(200)
                     .attr('stroke',
                         isSelected ? '#f59e0b' :
-                            isInFirst && isInSecond ? `#00ff73` :
-                                isInFirst ? '#0000ff' :
-                                    isInSecond ? `#ff0017` : `#2d2d4e`
+                            isInFirst && isInSecond ? this.getPointColor('both', 'border') :
+                                isInFirst ? this.getPointColor('first', 'border') :
+                                    isInSecond ? this.getPointColor('second', 'border') : `#2d2d4e`
                     )
                     .attr('stroke-opacity', isSelected ? 1 : isInSecond || isInSecond ? 1 : 0.7);
             }
         });
+    }
+
+    getPointColor(presence: 'both' | 'first' | 'second' | 'none', part: 'bg' | 'border' | 'text'): string {
+        const colors = {
+            both: { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.4)', text: '#22c55e' },
+            first: { bg: 'rgba(61,142,240,0.15)', border: 'rgba(61,142,240,0.4)', text: '#3d8ef0' },
+            second: { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.4)', text: '#f59e0b' },
+            none: { bg: 'rgba(99,140,200,0.08)', border: 'rgba(99,140,200,0.2)', text: '#8a9ab8' },
+        };
+        return colors[presence][part];
     }
 }

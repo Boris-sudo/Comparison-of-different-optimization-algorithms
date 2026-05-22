@@ -134,6 +134,13 @@
                         <div class="panel-card-sub">{{ state.routeMainPoints().length }} точек</div>
                     </div>
                 </div>
+                @if (state.pairRoutes() !== null) {
+                    <div style="font-size: 12px">
+                        <p style="color: #00ff73">Оба маршрута</p>
+                        <p style="color: #0000ff">{{ state.algorithms.first() }}</p>
+                        <p style="color: #ff0017">{{ state.algorithms.second() }}</p>
+                    </div>
+                }
                 <div class="route-list">
                     @for (pointId of state.routeMainPoints(); track pointId; let i = $index; let last = $last) {
                         <div class="route-list-item" (click)="focusNode(pointId)">
@@ -152,10 +159,58 @@
                 </div>
             </div>
         } @else if (state.pairRoutes() !== null) {
-            <div style="font-size: 12px">
-                <p style="color: #00ff73">Оба маршрута</p>
-                <p style="color: #0000ff">Первый маршрут</p>
-                <p style="color: #ff0017">Второй маршрут</p>
+            <div class="panel-card">
+                <div class="panel-card-header">
+                    <div class="panel-icon">◎</div>
+                    <div>
+                        <div class="panel-card-title">Маршрут</div>
+                        <div class="panel-card-sub">{{ state.routeMainPoints().length }} точек</div>
+                    </div>
+                </div>
+
+                            <!-- Легенда цветов -->
+                <div class="route-legend">
+                    <div class="route-legend-item">
+                        <span class="route-legend-dot" style="background:#22c55e"></span>
+                        <span>Оба маршрута</span>
+                    </div>
+                    <div class="route-legend-item">
+                        <span class="route-legend-dot" style="background:#3d8ef0"></span>
+                        <span>{{ state.algorithms.first() }}</span>
+                    </div>
+                    <div class="route-legend-item">
+                        <span class="route-legend-dot" style="background:#f59e0b"></span>
+                        <span>{{ state.algorithms.second() }}</span>
+                    </div>
+                </div>
+
+                <div class="route-list">
+                    @for (pointId of state.combinedMainPoints(); track pointId; let last = $last) {
+                        <div class="route-list-item" (click)="focusNode(pointId)">
+                            <div class="route-num"
+                                 [style.background]="getPointColor(pointId, 'bg')"
+                                 [style.border-color]="getPointColor(pointId, 'border')"
+                                 [style.color]="getPointColor(pointId, 'text')">
+                                {{ getPointIndex(pointId) }}
+                            </div>
+                            <span class="route-list-icon">
+                                {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.icon || '📍' }}
+                            </span>
+                            <span class="route-list-name">
+                                {{ state.houseCategories[state.getCategoryForHouse(pointId)]?.name || '—' }}
+                            </span>
+                            <!-- Метка какой алгоритм выбрал эту точку -->
+                            <span class="route-algo-tag"
+                                  [style.color]="getPointColor(pointId, 'text')"
+                                  [style.border-color]="getPointColor(pointId, 'border')">
+                                {{ getPointAlgoLabel(pointId) }}
+                            </span>
+                        </div>
+                        @if (!last) {
+                            <div class="route-list-connector"></div>
+                        }
+                    }
+                </div>
             </div>
         } @else {
             <div class="panel-card panel-empty">

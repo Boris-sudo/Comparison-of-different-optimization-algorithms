@@ -67,6 +67,28 @@
                             <span class="stat-label">algo</span>
                             <span class="stat-value">{{ state.routeDuration().algo }}ms</span>
                         </div>
+                    } @else if (state.pairRoutes() !== null) {
+                        <div class="sidebar-stats-title" style="margin-top:0.6rem">маршрут</div>
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-label" [style.color]="render.getPointColor('first', 'text')">длина {{ state.algorithms.first() }}</span>
+                            <span class="stat-value" [style.color]="render.getPointColor('first', 'text')">{{ state.pairRoutes()!.first.length }}</span>
+                        </div>
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-label" [style.color]="render.getPointColor('second', 'text')">длина {{ state.algorithms.second() }}</span>
+                            <span class="stat-value" [style.color]="render.getPointColor('second', 'text')">{{ state.pairRoutes()!.second.length }}</span>
+                        </div>
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-label">llm</span>
+                            <span class="stat-value">{{ Math.floor(state.pairRoutes()!.first.duration.network / 1000) }}s</span>
+                        </div>
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-label" [style.color]="render.getPointColor('first', 'text')">algo {{ state.algorithms.first() }}</span>
+                            <span class="stat-value" [style.color]="render.getPointColor('first', 'text')">{{ state.pairRoutes()!.first.duration.algo }}ms</span>
+                        </div>
+                        <div class="stat-item stat-item--accent">
+                            <span class="stat-label" [style.color]="render.getPointColor('second', 'text')">algo {{ state.algorithms.second() }}</span>
+                            <span class="stat-value" [style.color]="render.getPointColor('second', 'text')">{{ state.pairRoutes()!.second.duration.algo }}ms</span>
+                        </div>
                     }
                 </div>
             </aside>

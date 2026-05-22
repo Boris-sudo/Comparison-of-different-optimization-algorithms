@@ -76,6 +76,17 @@ export class GraphStateService {
         first: signal<ModelType>("Dfs"),
         second: signal<ModelType>("Annealing"),
     };
+    combinedMainPoints = computed(() => {
+        const routes = this.pairRoutes();
+        if (routes === null) return [];
+        const result: string[] = [];
+        for (let i = 0; i < routes.first.main_points.length; i++) {
+            result.push(routes.first.main_points[i]);
+            if (routes.first.main_points[i] !== routes.second.main_points[i])
+                result.push(routes.second.main_points[i]);
+        }
+        return result;
+    })
 
     // ─── Computed ─────────────────────────────────────────────────────────────
     hasRoute = computed(() => this.routeResult().length > 0);
@@ -200,7 +211,6 @@ export class GraphStateService {
         }
         this.routeMainPoints.set([...main]);
         this.routeOuterPoints.set([...outer]);
-
     }
 
     clearRoute() {

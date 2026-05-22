@@ -12,6 +12,7 @@ import { RouteService } from "../../services/api/route.service";
 import { D3Node, D3Link } from '../../services/graph/graph-state.service';
 import * as d3 from 'd3';
 import { GraphRouteService } from "../../services/graph/graph-route.service";
+import { MainPointsPipe } from "../../pipes/main-points.pipe";
 
 @Component({
     selector: 'app-home',
@@ -135,7 +136,7 @@ export class Home implements AfterViewInit, OnDestroy {
     }
 
     // ─── Route ────────────────────────────────────────────────────────────────
-    
+
     async generateCity() {
         this.route.clearRoute();
         await this.edit.generateCity(this.state.newCityNodeCount());
@@ -177,6 +178,39 @@ export class Home implements AfterViewInit, OnDestroy {
         if (!node || node.x === undefined || node.y === undefined) return;
         this.render.focusOn(node.x, node.y);
     }
-    
+
+    // ─── Route Comparison ────────────────────────────────────────────────────────────────
+
+    private getPointPresence(pointId: string): 'both' | 'first' | 'second' | 'none' {
+        const inFirst  = this.state.pairRoutes()?.first.main_points?.includes(pointId) ?? false;
+        const inSecond = this.state.pairRoutes()?.second?.main_points?.includes(pointId) ?? false;
+        if (inFirst && inSecond) return 'both';
+        if (inFirst)  return 'first';
+        if (inSecond) return 'second';
+        return 'none';
+    }
+
+    getPointColor(pointId: string, part: 'bg' | 'border' | 'text') {
+        const presence = this.getPointPresence(pointId);
+        return this.render.getPointColor(presence, part);
+    }
+
+    getPointIndex(pointId: string) {
+        const firstId = this.state.pairRoutes()?.first.main_points.indexOf(pointId) ?? -1;
+        if (firstId >= 0) return firstId;
+        return this.state.pairRoutes()?.second.main_points.indexOf(pointId) ?? -1;
+    }
+
+    getPointAlgoLabel(pointId: string): string {
+        const presence = this.getPointPresence(pointId);
+        const labels = {
+            both:   '∩',
+            first:  'A',
+            second: 'B',
+            none:   '',
+        };
+        return labels[presence];
+    }
+
     protected readonly Math = Math;
 }
